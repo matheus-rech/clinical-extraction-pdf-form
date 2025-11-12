@@ -61,14 +61,13 @@
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             margin: 0;
-            height: 100vh;
-            overflow: hidden;
+            min-height: 100vh;
             background-color: var(--background-light);
         }
 
         .main-container {
             display: flex;
-            height: 100vh;
+            min-height: 100vh;
         }
 
         .form-panel {
@@ -1033,9 +1032,282 @@
         .security-warning li {
             margin: 3px 0;
         }
+
+        /* ========================================================================== */
+        /* RESPONSIVE DESIGN - Media Queries */
+        /* ========================================================================== */
+
+        /* Panel Toggle Buttons (hidden on desktop, visible on mobile/tablet) */
+        .panel-toggle {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            background: var(--primary-blue);
+            color: white;
+            border: none;
+            padding: 12px 16px;
+            border-radius: var(--border-radius-md);
+            cursor: pointer;
+            box-shadow: var(--shadow-lg);
+            font-size: 18px;
+            transition: all var(--transition-fast);
+        }
+
+        .panel-toggle:hover {
+            background: var(--primary-blue-dark);
+            transform: scale(1.05);
+        }
+
+        .panel-toggle:active {
+            transform: scale(0.95);
+        }
+
+        /* Tablet Layout (768px - 1199px) */
+        @media (max-width: 1199px) {
+            .main-container {
+                flex-wrap: wrap;
+            }
+
+            .form-panel {
+                width: 45%;
+                max-height: 100vh;
+                overflow-y: auto;
+            }
+
+            .pdf-panel {
+                width: 55%;
+                max-height: 100vh;
+            }
+
+            .trace-panel {
+                width: 100%;
+                max-height: 400px;
+                border-left: none;
+                border-top: 2px solid var(--gray-400);
+            }
+
+            /* Reduce grid columns on tablet */
+            .grid-3col {
+                grid-template-columns: 1fr 1fr;
+            }
+
+            .grid-mrs {
+                grid-template-columns: repeat(4, 1fr);
+            }
+
+            /* Make toolbar wrap more gracefully */
+            .pdf-toolbar {
+                gap: 8px;
+            }
+
+            .pdf-toolbar button {
+                padding: 5px 10px;
+                font-size: 13px;
+            }
+        }
+
+        /* Mobile Layout (< 768px) */
+        @media (max-width: 767px) {
+            body {
+                overflow-x: hidden;
+            }
+
+            .main-container {
+                flex-direction: column;
+            }
+
+            /* All panels stack vertically */
+            .form-panel,
+            .pdf-panel,
+            .trace-panel {
+                width: 100%;
+                max-height: none;
+                border: none;
+            }
+
+            .form-panel {
+                order: 1;
+                min-height: auto;
+                padding: var(--spacing-md);
+            }
+
+            .pdf-panel {
+                order: 2;
+                min-height: 400px;
+            }
+
+            .trace-panel {
+                order: 3;
+                border-top: 2px solid var(--gray-400);
+                padding: var(--spacing-md);
+            }
+
+            /* Collapsible panels on mobile */
+            .form-panel.collapsed,
+            .trace-panel.collapsed {
+                display: none;
+            }
+
+            /* Toggle buttons visible on mobile */
+            .panel-toggle {
+                display: block;
+            }
+
+            #toggle-form {
+                top: 10px;
+                left: 10px;
+            }
+
+            #toggle-trace {
+                bottom: 10px;
+                right: 10px;
+            }
+
+            /* Typography adjustments */
+            h1 {
+                font-size: 20px;
+            }
+
+            h2 {
+                font-size: 18px;
+            }
+
+            h3 {
+                font-size: 16px;
+            }
+
+            /* Form layout */
+            .grid-2col,
+            .grid-3col {
+                grid-template-columns: 1fr;
+                gap: var(--spacing-sm);
+            }
+
+            .grid-mrs {
+                grid-template-columns: repeat(2, 1fr);
+                gap: var(--spacing-xs);
+            }
+
+            /* Buttons */
+            button {
+                padding: 10px 14px;
+                font-size: 14px;
+            }
+
+            .navigation {
+                flex-direction: column;
+                gap: var(--spacing-sm);
+                padding: var(--spacing-sm);
+            }
+
+            .navigation button {
+                width: 100%;
+            }
+
+            /* PDF Toolbar */
+            .pdf-toolbar {
+                flex-direction: column;
+                align-items: stretch;
+                gap: var(--spacing-xs);
+            }
+
+            .pdf-toolbar button,
+            .pdf-toolbar select {
+                width: 100%;
+            }
+
+            #active-field-indicator {
+                margin-left: 0;
+                margin-top: var(--spacing-xs);
+                text-align: center;
+            }
+
+            /* Form groups */
+            .form-group {
+                margin-bottom: var(--spacing-sm);
+                padding: var(--spacing-xs);
+            }
+
+            input[type="text"],
+            input[type="number"],
+            input[type="email"],
+            select,
+            textarea {
+                font-size: 16px; /* Prevent iOS zoom on focus */
+            }
+
+            /* Modals */
+            .settings-modal .settings-content {
+                width: 95%;
+                max-width: none;
+                margin: 5% auto;
+                padding: var(--spacing-md);
+            }
+
+            /* Table parser modal */
+            #table-parser-modal .settings-content {
+                max-width: none;
+            }
+
+            /* Stats container */
+            .stats-row {
+                flex-direction: column;
+                gap: var(--spacing-xs);
+            }
+
+            /* PDF Container */
+            .pdf-container {
+                padding: var(--spacing-sm) 0;
+            }
+
+            .pdf-page {
+                max-width: 100%;
+                margin: var(--spacing-sm) auto;
+            }
+
+            /* Upload area */
+            .upload-area {
+                margin: var(--spacing-md);
+                padding: var(--spacing-lg);
+            }
+        }
+
+        /* Small Mobile (< 480px) */
+        @media (max-width: 479px) {
+            .form-panel,
+            .trace-panel {
+                padding: var(--spacing-sm);
+            }
+
+            h1 {
+                font-size: 18px;
+            }
+
+            .grid-mrs {
+                grid-template-columns: 1fr;
+            }
+
+            .pdf-toolbar button {
+                padding: 8px 10px;
+                font-size: 12px;
+            }
+
+            .panel-toggle {
+                padding: 10px 12px;
+                font-size: 16px;
+            }
+        }
     </style>
 </head>
 <body>
+    <!-- Mobile Panel Toggle Buttons (hidden on desktop) -->
+    <button id="toggle-form" class="panel-toggle" onclick="togglePanel('form')" title="Toggle Form Panel">
+        ☰ Form
+    </button>
+    <button id="toggle-trace" class="panel-toggle" onclick="togglePanel('trace')" title="Toggle Trace Log">
+        📋 Trace
+    </button>
+
     <div class="main-container">
         <!-- Form Panel (Left) -->
         <div class="form-panel">
@@ -2486,6 +2758,84 @@
                 StatusManager.show('📷 Image mode: Draw a box to capture a figure/image', 'info', 5000);
             }
         };
+
+        // ============================================================================
+        // RESPONSIVE PANEL TOGGLE - Mobile/Tablet Support
+        // ============================================================================
+
+        /**
+         * Toggle panel visibility on mobile/tablet
+         * @param {string} panel - 'form' or 'trace'
+         */
+        window.togglePanel = function(panel) {
+            const formPanel = document.querySelector('.form-panel');
+            const tracePanel = document.querySelector('.trace-panel');
+
+            if (panel === 'form') {
+                formPanel.classList.toggle('collapsed');
+
+                // Save state to localStorage
+                const isCollapsed = formPanel.classList.contains('collapsed');
+                localStorage.setItem('formPanelCollapsed', isCollapsed);
+
+                // Update button text
+                const btn = document.getElementById('toggle-form');
+                btn.textContent = isCollapsed ? '☰ Show Form' : '☰ Hide Form';
+
+                StatusManager.show(isCollapsed ? 'Form panel hidden' : 'Form panel visible', 'info', 2000);
+            } else if (panel === 'trace') {
+                tracePanel.classList.toggle('collapsed');
+
+                // Save state to localStorage
+                const isCollapsed = tracePanel.classList.contains('collapsed');
+                localStorage.setItem('tracePanelCollapsed', isCollapsed);
+
+                // Update button text
+                const btn = document.getElementById('toggle-trace');
+                btn.textContent = isCollapsed ? '📋 Show Trace' : '📋 Hide Trace';
+
+                StatusManager.show(isCollapsed ? 'Trace panel hidden' : 'Trace panel visible', 'info', 2000);
+            }
+        };
+
+        /**
+         * Restore panel states from localStorage on page load
+         */
+        function restorePanelStates() {
+            // Only apply on mobile/tablet (< 768px)
+            if (window.innerWidth >= 768) return;
+
+            const formPanel = document.querySelector('.form-panel');
+            const tracePanel = document.querySelector('.trace-panel');
+
+            const formCollapsed = localStorage.getItem('formPanelCollapsed') === 'true';
+            const traceCollapsed = localStorage.getItem('tracePanelCollapsed') === 'true';
+
+            if (formCollapsed) {
+                formPanel.classList.add('collapsed');
+                document.getElementById('toggle-form').textContent = '☰ Show Form';
+            }
+
+            if (traceCollapsed) {
+                tracePanel.classList.add('collapsed');
+                document.getElementById('toggle-trace').textContent = '📋 Show Trace';
+            }
+        }
+
+        // Restore panel states on page load
+        window.addEventListener('DOMContentLoaded', restorePanelStates);
+
+        // Reset panel states when resizing to desktop
+        window.addEventListener('resize', () => {
+            if (window.innerWidth >= 768) {
+                const formPanel = document.querySelector('.form-panel');
+                const tracePanel = document.querySelector('.trace-panel');
+                formPanel.classList.remove('collapsed');
+                tracePanel.classList.remove('collapsed');
+                document.getElementById('toggle-form').textContent = '☰ Form';
+                document.getElementById('toggle-trace').textContent = '📋 Trace';
+            }
+        });
 
         // ============================================================================
         // TABLE PARSER MANAGER - Feature 5: AI Vision Table Parsing
