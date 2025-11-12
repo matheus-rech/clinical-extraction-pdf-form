@@ -1,0 +1,31 @@
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Test PDFs (don't commit patient data or copyrighted papers)
+*.pdf
+*.PDF
+
+# Backup files
+*.backup
+*.bak
+*_BACKUP.*
+
+# Archive files (optional - uncomment if you don't want archives in git)
+# *.archive.md
+
+# Editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Logs
+*.log
+
+# OS generated files
+Thumbs.db
+ehthumbs.db
+Desktop.ini
