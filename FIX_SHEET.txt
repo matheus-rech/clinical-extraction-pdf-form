@@ -1,0 +1,58 @@
+================================================================
+QUICK FIX FOR YOUR GOOGLE SHEET
+================================================================
+
+Sheet URL: https://docs.google.com/spreadsheets/d/1P7EQq4hTx8-5YTXQPEcIYLLKq9tsxjNagA8qWVv6JVw/edit
+
+================================================================
+STEP 1: FIX SHEET1 (SUBMISSIONS)
+================================================================
+
+1. Click on cell A1 (currently shows "Extractions")
+2. Delete the content
+3. Type: Submission ID
+4. Press Enter
+
+5. Now select the ENTIRE Row 1 (click on the "1" row number)
+6. Delete all content (press Delete key)
+
+7. Click on cell A1 again
+8. Copy this COMPLETE line (all 48 headers):
+
+Submission ID	Timestamp	Document	Citation	DOI	PMID	Journal	Year	Country	Centers	Funding	Conflicts	Registration	Population	Intervention	Comparator	Outcomes	Timing	Study Type	Inclusion Met	Total N	Surgical N	Control N	Age Mean	Age SD	Age Median	Age IQR Lower	Age IQR Upper	Male N	Female N	Pre-stroke mRS	NIHSS Mean	GCS Mean	Vascular Territory	Infarct Volume	Stroke Volume Cerebellum	Edema Dynamics	Peak Swelling Window	Brainstem Involvement	Supratentorial Involvement	Non-Cerebellar Stroke	Indications (JSON)	Interventions (JSON)	Study Arms (JSON)	Mortality Data (JSON)	mRS Data (JSON)	Complications (JSON)	Predictors (JSON)	Predictors Summary
+
+9. Paste into A1 (Cmd+V)
+10. Select Row 1 → Make Bold (Cmd+B)
+11. View → Freeze → 1 row
+12. Right-click on "Sheet1" tab → Rename → Type: Submissions
+
+================================================================
+STEP 2: CREATE EXTRACTIONS TAB
+================================================================
+
+1. Click the "+" button at the bottom to add a new sheet
+2. Click on cell A1 in the new sheet
+3. Copy this line (9 headers):
+
+Submission ID	Field Name	Text	Page	Method	X	Y	Width	Height
+
+4. Paste into A1
+5. Select Row 1 → Make Bold (Cmd+B)
+6. View → Freeze → 1 row
+7. Right-click on "Sheet2" tab → Rename → Type: Extractions
+
+================================================================
+VERIFICATION
+================================================================
+
+After these steps, you should have:
+
+✓ Tab 1: "Submissions" with 48 columns (A through AV)
+  - A1 shows "Submission ID"
+  - Last column (AV) shows "Predictors Summary"
+
+✓ Tab 2: "Extractions" with 9 columns (A through I)
+  - A1 shows "Submission ID"
+  - I1 shows "Height"
+
+================================================================

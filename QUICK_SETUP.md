@@ -15,12 +15,12 @@
 1. Go to: https://sheets.google.com/
 2. Create blank sheet: `Clinical Study Data`
 3. Rename Sheet1 → `Submissions`
-4. Add headers:
+4. Add 48 headers (copy from below - tab-separated):
    ```
-   Submission ID | Timestamp | Document | Citation | DOI | PMID | Total N
+   Submission ID	Timestamp	Document	Citation	DOI	PMID	Journal	Year	Country	Centers	Funding	Conflicts	Registration	Population	Intervention	Comparator	Outcomes	Timing	Study Type	Inclusion Met	Total N	Surgical N	Control N	Age Mean	Age SD	Age Median	Age IQR Lower	Age IQR Upper	Male N	Female N	Pre-stroke mRS	NIHSS Mean	GCS Mean	Vascular Territory	Infarct Volume	Stroke Volume Cerebellum	Edema Dynamics	Peak Swelling Window	Brainstem Involvement	Supratentorial Involvement	Non-Cerebellar Stroke	Indications (JSON)	Interventions (JSON)	Study Arms (JSON)	Mortality Data (JSON)	mRS Data (JSON)	Complications (JSON)	Predictors (JSON)	Predictors Summary
    ```
 5. Create Sheet2 → `Extractions`
-6. Add headers:
+6. Add headers (9 columns):
    ```
    Submission ID | Field Name | Text | Page | Method | X | Y | Width | Height
    ```
@@ -65,12 +65,20 @@ Where: Browser address bar when sheet is open
 
 ## 🎯 Sheet Column Headers (Must Be Exact)
 
-**Submissions Tab Row 1:**
+**Submissions Tab Row 1 (48 columns):**
 ```
-Submission ID	Timestamp	Document	Citation	DOI	PMID	Total N
+Submission ID	Timestamp	Document	Citation	DOI	PMID	Journal	Year	Country	Centers	Funding	Conflicts	Registration	Population	Intervention	Comparator	Outcomes	Timing	Study Type	Inclusion Met	Total N	Surgical N	Control N	Age Mean	Age SD	Age Median	Age IQR Lower	Age IQR Upper	Male N	Female N	Pre-stroke mRS	NIHSS Mean	GCS Mean	Vascular Territory	Infarct Volume	Stroke Volume Cerebellum	Edema Dynamics	Peak Swelling Window	Brainstem Involvement	Supratentorial Involvement	Non-Cerebellar Stroke	Indications (JSON)	Interventions (JSON)	Study Arms (JSON)	Mortality Data (JSON)	mRS Data (JSON)	Complications (JSON)	Predictors (JSON)	Predictors Summary
 ```
 
-**Extractions Tab Row 1:**
+**Structure Breakdown:**
+- Metadata: 3 columns
+- Step 1 (Study ID): 10 columns
+- Step 2 (PICO-T): 7 columns
+- Step 3 (Baseline): 13 columns
+- Step 4 (Imaging): 8 columns
+- Steps 5-8 (Dynamic Fields): 7 columns (stored as JSON arrays)
+
+**Extractions Tab Row 1 (9 columns):**
 ```
 Submission ID	Field Name	Text	Page	Method	X	Y	Width	Height
 ```
@@ -79,6 +87,7 @@ Submission ID	Field Name	Text	Page	Method	X	Y	Width	Height
 - Tab names are case-sensitive: `Submissions` and `Extractions`
 - Column order must match exactly
 - Headers must be in Row 1
+- Dynamic fields (Indications, Interventions, etc.) are stored as JSON strings for flexibility
 
 ---
 

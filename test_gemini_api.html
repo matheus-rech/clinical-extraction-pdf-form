@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gemini API Tester</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 1200px;
+            margin: 40px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #1a73e8;
+            border-bottom: 3px solid #1a73e8;
+            padding-bottom: 10px;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            background: #fafafa;
+        }
+        .test-section h3 {
+            margin-top: 0;
+            color: #333;
+        }
+        button {
+            background: #1a73e8;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            margin: 5px;
+        }
+        button:hover {
+            background: #1557b0;
+        }
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        .result {
+            margin-top: 10px;
+            padding: 10px;
+            border-radius: 4px;
+            white-space: pre-wrap;
+            font-family: monospace;
+            font-size: 12px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .result.success {
+            background: #e6f4ea;
+            border: 1px solid #34a853;
+            color: #137333;
+        }
+        .result.error {
+            background: #fce8e6;
+            border: 1px solid #ea4335;
+            color: #c5221f;
+        }
+        .result.info {
+            background: #e8f0fe;
+            border: 1px solid #1a73e8;
+            color: #1967d2;
+        }
+        .api-key-input {
+            width: 100%;
+            padding: 10px;
+            font-family: monospace;
+            font-size: 14px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .status {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 3px;
+            font-size: 12px;
+            font-weight: bold;
+            margin-left: 10px;
+        }
+        .status.pending {
+            background: #fef7e0;
+            color: #f9ab00;
+        }
+        .status.success {
+            background: #e6f4ea;
+            color: #137333;
+        }
+        .status.failed {
+            background: #fce8e6;
+            color: #c5221f;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 Gemini API Testing Tool</h1>
+
+        <div class="test-section">
+            <h3>API Key Configuration</h3>
+            <input type="password" id="apiKey" class="api-key-input"
+                   placeholder="Paste your Gemini API key here (or it will use the one from Clinical_Study_Extraction.html)">
+            <button onclick="loadConfigKey()">Load from Config</button>
+            <button onclick="testApiKey()">Validate API Key</button>
+            <div id="keyValidation"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>Test 1: Basic API Call (No Search)</h3>
+            <p>Tests: Gemini 1.5 Flash without any special features</p>
+            <button onclick="testBasicCall()">Run Test 1</button>
+            <span id="test1Status" class="status pending">Not Started</span>
+            <div id="test1Result"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>Test 2: Gemini 2.5 Flash + google_search (Modern)</h3>
+            <p>Tests: Latest model with modern search syntax</p>
+            <button onclick="testModernSearch()">Run Test 2</button>
+            <span id="test2Status" class="status pending">Not Started</span>
+            <div id="test2Result"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>Test 3: Gemini 1.5 Flash + google_search_retrieval (Legacy)</h3>
+            <p>Tests: Legacy model with legacy search syntax</p>
+            <button onclick="testLegacySearch()">Run Test 3</button>
+            <span id="test3Status" class="status pending">Not Started</span>
+            <div id="test3Result"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>Test 4: Citation Metadata Search (Full Integration)</h3>
+            <p>Tests: The actual citation search function from your app</p>
+            <input type="text" id="citationInput" placeholder="Enter a study citation or title"
+                   style="width: calc(100% - 24px); padding: 10px; margin-bottom: 10px;">
+            <button onclick="testCitationSearch()">Run Test 4</button>
+            <span id="test4Status" class="status pending">Not Started</span>
+            <div id="test4Result"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>Test 5: Run All Tests</h3>
+            <button onclick="runAllTests()">Run All Tests</button>
+            <div id="allTestsResult"></div>
+        </div>
+    </div>
+
+    <script>
+        let API_KEY = "AIzaSyB0fmdmQ5tP5sWaI7scEa_72iKLb3pns70"; // Default from your config
+
+        function loadConfigKey() {
+            document.getElementById('apiKey').value = API_KEY;
+            showResult('keyValidation', `✓ Loaded API key from config: ${API_KEY.substring(0, 20)}...`, 'success');
+        }
+
+        function testApiKey() {
+            const input = document.getElementById('apiKey').value;
+            if (input) {
+                API_KEY = input;
+            }
+
+            if (!API_KEY || API_KEY.includes('PASTE_YOUR')) {
+                showResult('keyValidation', '❌ Invalid or missing API key', 'error');
+                return;
+            }
+
+            showResult('keyValidation', `✓ API Key format looks valid: ${API_KEY.substring(0, 20)}...${API_KEY.substring(API_KEY.length - 5)}`, 'success');
+        }
+
+        async function testBasicCall() {
+            updateStatus('test1Status', 'pending', 'Running...');
+            showResult('test1Result', 'Testing basic API call...', 'info');
+
+            try {
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${API_KEY}`;
+
+                const payload = {
+                    contents: [{
+                        parts: [{ text: "Say 'Hello from Gemini!' and nothing else." }]
+                    }]
+                };
+
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                const result = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(`${response.status}: ${result.error?.message || 'Unknown error'}`);
+                }
+
+                const text = result.candidates?.[0]?.content?.parts?.[0]?.text;
+
+                if (text) {
+                    updateStatus('test1Status', 'success', '✓ Success');
+                    showResult('test1Result',
+                        `✅ SUCCESS!\n\nModel: gemini-1.5-flash\nResponse: "${text}"\n\nFull response:\n${JSON.stringify(result, null, 2)}`,
+                        'success');
+                } else {
+                    throw new Error('No text in response');
+                }
+
+            } catch (error) {
+                updateStatus('test1Status', 'failed', '✗ Failed');
+                showResult('test1Result',
+                    `❌ FAILED\n\nError: ${error.message}\n\nThis suggests:\n- API key may be invalid\n- API may be disabled\n- Network connectivity issue`,
+                    'error');
+            }
+        }
+
+        async function testModernSearch() {
+            updateStatus('test2Status', 'pending', 'Running...');
+            showResult('test2Result', 'Testing Gemini 2.5 Flash with modern google_search...', 'info');
+
+            try {
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${API_KEY}`;
+
+                const payload = {
+                    contents: [{
+                        parts: [{ text: "What is the current weather in San Francisco?" }]
+                    }],
+                    tools: [{ "google_search": {} }]
+                };
+
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                const result = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(`${response.status}: ${result.error?.message || 'Unknown error'}`);
+                }
+
+                const text = result.candidates?.[0]?.content?.parts?.[0]?.text;
+                const groundingMetadata = result.candidates?.[0]?.groundingMetadata;
+
+                if (text) {
+                    updateStatus('test2Status', 'success', '✓ Success');
+                    showResult('test2Result',
+                        `✅ SUCCESS!\n\nModel: gemini-2.5-flash\nTool: google_search (modern)\nResponse: "${text.substring(0, 200)}..."\n\nGrounding Metadata: ${groundingMetadata ? 'Yes (search was used!)' : 'No'}\n\nFull response:\n${JSON.stringify(result, null, 2)}`,
+                        'success');
+                } else {
+                    throw new Error('No text in response');
+                }
+
+            } catch (error) {
+                updateStatus('test2Status', 'failed', '✗ Failed');
+                showResult('test2Result',
+                    `❌ FAILED\n\nError: ${error.message}\n\nThis suggests:\n- Gemini 2.5 not available for your API key\n- google_search tool not enabled\n- Model name may have changed\n\nThis is OK - we'll fall back to Gemini 1.5`,
+                    'error');
+            }
+        }
+
+        async function testLegacySearch() {
+            updateStatus('test3Status', 'pending', 'Running...');
+            showResult('test3Result', 'Testing Gemini 1.5 Flash with legacy google_search_retrieval...', 'info');
+
+            try {
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${API_KEY}`;
+
+                const payload = {
+                    contents: [{
+                        parts: [{ text: "What is the current weather in San Francisco?" }]
+                    }],
+                    tools: [{
+                        "google_search_retrieval": {
+                            "dynamic_retrieval_config": {
+                                "mode": "MODE_DYNAMIC",
+                                "dynamic_threshold": 0.7
+                            }
+                        }
+                    }]
+                };
+
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                const result = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(`${response.status}: ${result.error?.message || 'Unknown error'}`);
+                }
+
+                const text = result.candidates?.[0]?.content?.parts?.[0]?.text;
+                const groundingMetadata = result.candidates?.[0]?.groundingMetadata;
+
+                if (text) {
+                    updateStatus('test3Status', 'success', '✓ Success');
+                    showResult('test3Result',
+                        `✅ SUCCESS!\n\nModel: gemini-1.5-flash\nTool: google_search_retrieval (legacy)\nResponse: "${text.substring(0, 200)}..."\n\nGrounding Metadata: ${groundingMetadata ? 'Yes (search was used!)' : 'No'}\n\nFull response:\n${JSON.stringify(result, null, 2)}`,
+                        'success');
+                } else {
+                    throw new Error('No text in response');
+                }
+
+            } catch (error) {
+                updateStatus('test3Status', 'failed', '✗ Failed');
+                showResult('test3Result',
+                    `❌ FAILED\n\nError: ${error.message}\n\nThis suggests:\n- google_search_retrieval tool not enabled\n- API key doesn't have search permissions\n\nThis is OK - we can still use the model without search`,
+                    'error');
+            }
+        }
+
+        async function testCitationSearch() {
+            updateStatus('test4Status', 'pending', 'Running...');
+            const citation = document.getElementById('citationInput').value || "Kim et al. Cerebellar infarction Neurosurgery 2016";
+            showResult('test4Result', `Testing citation search for: "${citation}"`, 'info');
+
+            try {
+                // Use the hybrid function logic
+                const result = await testCitationMetadata(citation);
+
+                updateStatus('test4Status', 'success', '✓ Success');
+                showResult('test4Result',
+                    `✅ SUCCESS!\n\nCitation: "${citation}"\n\nExtracted Metadata:\n${JSON.stringify(result, null, 2)}`,
+                    'success');
+
+            } catch (error) {
+                updateStatus('test4Status', 'failed', '✗ Failed');
+                showResult('test4Result',
+                    `❌ FAILED\n\nError: ${error.message}`,
+                    'error');
+            }
+        }
+
+        async function testCitationMetadata(citation) {
+            const systemPrompt = "You are a research assistant. Find the metadata for the given study. Use Google Search to find the information. If a value isn't found, return an empty string for it. Provide only the JSON response.";
+            const userPrompt = `Find the DOI, PMID, journal name, and publication year for the following study: "${citation}"`;
+
+            const jsonSchema = {
+                type: "OBJECT",
+                properties: {
+                    "doi": { "type": "STRING", "description": "The DOI of the paper" },
+                    "pmid": { "type": "STRING", "description": "The PubMed ID (PMID) of the paper" },
+                    "journal": { "type": "STRING", "description": "The name of the journal" },
+                    "year": { "type": "STRING", "description": "The 4-digit publication year" }
+                }
+            };
+
+            // Try Strategy 1: Gemini 2.5 + google_search
+            try {
+                const result = await tryStrategy('gemini-2.5-flash', { "google_search": {} }, systemPrompt, userPrompt, jsonSchema);
+                return JSON.parse(result);
+            } catch (error1) {
+                // Try Strategy 2: Gemini 1.5 + google_search_retrieval
+                try {
+                    const result = await tryStrategy('gemini-1.5-flash', {
+                        "google_search_retrieval": {
+                            "dynamic_retrieval_config": {
+                                "mode": "MODE_DYNAMIC",
+                                "dynamic_threshold": 0.7
+                            }
+                        }
+                    }, systemPrompt, userPrompt, jsonSchema);
+                    return JSON.parse(result);
+                } catch (error2) {
+                    // Try Strategy 3: Gemini 1.5 without search
+                    try {
+                        const result = await tryStrategy('gemini-1.5-flash', null, systemPrompt, userPrompt, jsonSchema);
+                        return JSON.parse(result);
+                    } catch (error3) {
+                        throw new Error(`All strategies failed. Last: ${error3.message}`);
+                    }
+                }
+            }
+        }
+
+        async function tryStrategy(model, searchTool, systemPrompt, userPrompt, jsonSchema) {
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${API_KEY}`;
+
+            const payload = {
+                contents: [{ parts: [{ text: userPrompt }] }],
+                systemInstruction: { parts: [{ text: systemPrompt }] }
+            };
+
+            if (searchTool) {
+                payload.tools = [searchTool];
+            }
+
+            if (jsonSchema) {
+                payload.generationConfig = {
+                    responseMimeType: "application/json",
+                    responseSchema: jsonSchema
+                };
+            }
+
+            const response = await fetch(apiUrl, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+
+            if (!response.ok) {
+                const errorBody = await response.json();
+                throw new Error(`${response.status}: ${errorBody.error?.message || 'Unknown'}`);
+            }
+
+            const result = await response.json();
+            const text = result.candidates?.[0]?.content?.parts?.[0]?.text;
+
+            if (!text) {
+                throw new Error('No text in response');
+            }
+
+            return text;
+        }
+
+        async function runAllTests() {
+            showResult('allTestsResult', 'Running all tests sequentially...', 'info');
+
+            await testBasicCall();
+            await new Promise(resolve => setTimeout(resolve, 1000));
+
+            await testModernSearch();
+            await new Promise(resolve => setTimeout(resolve, 1000));
+
+            await testLegacySearch();
+            await new Promise(resolve => setTimeout(resolve, 1000));
+
+            await testCitationSearch();
+
+            showResult('allTestsResult', '✅ All tests completed! Check individual results above.', 'success');
+        }
+
+        function showResult(elementId, message, type) {
+            const element = document.getElementById(elementId);
+            element.textContent = message;
+            element.className = `result ${type}`;
+        }
+
+        function updateStatus(elementId, status, text) {
+            const element = document.getElementById(elementId);
+            element.className = `status ${status}`;
+            element.textContent = text;
+        }
+
+        // Auto-load config key on page load
+        window.onload = () => {
+            loadConfigKey();
+        };
+    </script>
+</body>
+</html>

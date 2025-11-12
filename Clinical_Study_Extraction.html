@@ -1297,6 +1297,401 @@
                 font-size: 16px;
             }
         }
+
+        /* ============================================================================
+           PREPROCESSING SIDEBAR
+           ============================================================================ */
+        .preprocessing-sidebar {
+            position: fixed;
+            right: 0;
+            top: 0;
+            width: 350px;
+            height: 100vh;
+            background: white;
+            border-left: 2px solid #e0e0e0;
+            box-shadow: -4px 0 12px rgba(0,0,0,0.1);
+            z-index: 1001;
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            overflow-y: auto;
+            overflow-x: hidden;
+        }
+
+        .preprocessing-sidebar.collapsed {
+            transform: translateX(100%);
+        }
+
+        .sidebar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .sidebar-header h3 {
+            margin: 0;
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .sidebar-header .icon-btn {
+            background: rgba(255,255,255,0.2);
+            border: none;
+            color: white;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 16px;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .sidebar-header .icon-btn:hover {
+            background: rgba(255,255,255,0.3);
+            transform: scale(1.1);
+        }
+
+        .sidebar-content {
+            padding: 20px;
+        }
+
+        .sidebar-section {
+            margin-bottom: 25px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .sidebar-section:last-child {
+            border-bottom: none;
+        }
+
+        .sidebar-section h4 {
+            margin: 0 0 12px 0;
+            font-size: 14px;
+            font-weight: 600;
+            color: #333;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .nav-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .nav-list li {
+            padding: 10px 12px;
+            margin: 6px 0;
+            background: #f8f9fa;
+            border-left: 3px solid #667eea;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 13px;
+        }
+
+        .nav-list li:hover {
+            background: #e8eaf6;
+            border-left-color: #5e35b1;
+            transform: translateX(4px);
+            box-shadow: 0 2px 8px rgba(102, 126, 234, 0.2);
+        }
+
+        .nav-list li strong {
+            display: block;
+            color: #333;
+            margin-bottom: 4px;
+            text-transform: capitalize;
+        }
+
+        .nav-list li small {
+            color: #666;
+            font-size: 11px;
+        }
+
+        .nav-list:empty::after {
+            content: "None detected";
+            display: block;
+            padding: 12px;
+            text-align: center;
+            color: #999;
+            font-style: italic;
+            font-size: 13px;
+        }
+
+        .sidebar-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .sidebar-actions button {
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: 6px;
+            background: #667eea;
+            color: white;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .sidebar-actions button:hover {
+            background: #5e35b1;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+        }
+
+        .sidebar-actions button:active {
+            transform: translateY(0);
+        }
+
+        #doc-overview p {
+            margin: 6px 0;
+            font-size: 13px;
+            line-height: 1.6;
+        }
+
+        #doc-overview strong {
+            color: #667eea;
+            font-weight: 600;
+        }
+
+        /* Mobile responsiveness */
+        @media (max-width: 768px) {
+            .preprocessing-sidebar {
+                width: 100%;
+                max-width: 350px;
+            }
+        }
+
+        /* Sidebar toggle button (floating when sidebar is closed) */
+        .sidebar-toggle-float {
+            position: fixed;
+            right: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: #667eea;
+            color: white;
+            border: none;
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+            cursor: pointer;
+            z-index: 1000;
+            font-size: 20px;
+            transition: all 0.3s;
+            display: none;
+        }
+
+        .sidebar-toggle-float:hover {
+            transform: translateY(-50%) scale(1.1);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.5);
+        }
+
+        .preprocessing-sidebar.collapsed ~ .sidebar-toggle-float {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* ============================================================================
+           SMART SUGGESTION POPUP
+           ============================================================================ */
+        .suggestion-popup {
+            position: absolute;
+            background: white;
+            border: 2px solid #667eea;
+            border-radius: 12px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+            z-index: 10001;
+            width: 400px;
+            max-width: 90vw;
+            animation: fadeInUp 0.3s ease;
+        }
+
+        .suggestion-popup.hidden {
+            display: none;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .suggestion-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 16px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 10px 10px 0 0;
+        }
+
+        .suggestion-title {
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .suggestion-close {
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+
+        .suggestion-close:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: scale(1.1);
+        }
+
+        .suggestion-content {
+            padding: 12px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .suggestion-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px;
+            margin-bottom: 8px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border: 1px solid #e0e0e0;
+            transition: all 0.2s;
+        }
+
+        .suggestion-item:hover {
+            background: #e8eaf6;
+            border-color: #667eea;
+            transform: translateX(4px);
+        }
+
+        .suggestion-item.suggestion-top {
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.05));
+            border: 2px solid #667eea;
+        }
+
+        .suggestion-badge {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            flex-shrink: 0;
+        }
+
+        .suggestion-badge.table {
+            background: #4CAF50;
+            color: white;
+        }
+
+        .suggestion-badge.section {
+            background: #2196F3;
+            color: white;
+        }
+
+        .suggestion-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .suggestion-item-title {
+            font-weight: 600;
+            font-size: 13px;
+            color: #333;
+            margin-bottom: 4px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .suggestion-item-meta {
+            font-size: 11px;
+            color: #666;
+        }
+
+        .suggestion-action {
+            padding: 6px 12px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 12px;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: all 0.2s;
+        }
+
+        .suggestion-action:hover {
+            background: #5568d3;
+            transform: scale(1.05);
+        }
+
+        .suggestion-footer {
+            padding: 10px 16px;
+            border-top: 1px solid #e0e0e0;
+            display: flex;
+            justify-content: flex-end;
+        }
+
+        .suggestion-disable {
+            padding: 6px 12px;
+            background: transparent;
+            color: #666;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .suggestion-disable:hover {
+            background: #f5f5f5;
+            border-color: #bbb;
+        }
+
+        /* Mobile responsiveness */
+        @media (max-width: 768px) {
+            .suggestion-popup {
+                width: 90vw;
+                left: 5vw !important;
+            }
+        }
     </style>
 </head>
 <body>
@@ -1309,6 +1704,52 @@
     </button>
 
     <div class="main-container">
+        <!-- Preprocessing Sidebar (Right) -->
+        <div id="preprocessing-sidebar" class="preprocessing-sidebar collapsed">
+            <div class="sidebar-header">
+                <h3>📊 Document Structure</h3>
+                <button id="toggle-sidebar" class="icon-btn" title="Toggle sidebar">◀</button>
+            </div>
+
+            <div class="sidebar-content">
+                <!-- Document Overview -->
+                <div class="sidebar-section">
+                    <h4>Overview</h4>
+                    <div id="doc-overview">
+                        <p style="color: #999; font-style: italic;">No document loaded</p>
+                    </div>
+                </div>
+
+                <!-- Sections Navigator -->
+                <div class="sidebar-section">
+                    <h4>📄 Sections (<span id="section-count">0</span>)</h4>
+                    <ul id="sections-list" class="nav-list"></ul>
+                </div>
+
+                <!-- Tables List -->
+                <div class="sidebar-section">
+                    <h4>📊 Tables (<span id="table-count">0</span>)</h4>
+                    <ul id="tables-list" class="nav-list"></ul>
+                </div>
+
+                <!-- Citations List -->
+                <div class="sidebar-section">
+                    <h4>📚 Citations (<span id="citation-count">0</span>)</h4>
+                    <ul id="citations-list" class="nav-list"></ul>
+                </div>
+
+                <!-- Actions -->
+                <div class="sidebar-actions">
+                    <button id="export-structure-btn" class="btn-secondary" title="Export preprocessing data as JSON">
+                        💾 Export JSON
+                    </button>
+                    <button id="toggle-overlays-btn" class="btn-secondary" title="Toggle PDF overlay annotations">
+                        👁️ Toggle Overlays
+                    </button>
+                </div>
+            </div>
+        </div>
+
         <!-- Form Panel (Left) -->
         <div class="form-panel">
             <h1>Clinical Study Master Extraction</h1>
@@ -1906,7 +2347,7 @@
             // Configure provider in Settings (⚙️ button)
             // Features: PICO-T generation, summaries, validation, metadata search
             // Example: "AIzaSyD7..." (Gemini), "sk-ant-..." (Anthropic), "sk-..." (OpenAI)
-            AI_API_KEY: "PASTE_YOUR_AI_API_KEY_HERE",
+            AI_API_KEY: "AIzaSyB0fmdmQ5tP5sWaI7scEa_72iKLb3pns70",
             
             // GOOGLE CLOUD API KEY - Currently unused (reserved for future features)
             // Get from: https://console.cloud.google.com
@@ -1920,13 +2361,13 @@
             // Application type: Web application
             // Authorized JavaScript origins: http://localhost:8000
             // Example: "123456789-abcdefghijklmnop.apps.googleusercontent.com"
-            GOOGLE_CLIENT_ID: "PASTE_YOUR_CLIENT_ID_HERE.apps.googleusercontent.com",
+            GOOGLE_CLIENT_ID: "84349733634-cmkfsru9aul9f7bndeq2s78rifr42gdh.apps.googleusercontent.com",
             
             // GOOGLE SHEET ID - Your destination Google Sheet
             // From your Google Sheet URL: docs.google.com/spreadsheets/d/{SHEET_ID}/edit
             // Required tabs: "Submissions" and "Extractions"
             // Example: "1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms"
-            GOOGLE_SHEET_ID: "PASTE_YOUR_SHEET_ID_HERE",
+            GOOGLE_SHEET_ID: "1P7EQq4hTx8-5YTXQPEcIYLLKq9tsxjNagA8qWVv6JVw",
             
             // Google Sheets API scope (do not modify)
             GOOGLE_SCOPES: "https://www.googleapis.com/auth/spreadsheets"
@@ -3378,6 +3819,1114 @@
         window.addEventListener('beforeunload', () => MemoryManager.cleanup());
 
 
+        // ============================================================================
+        // PDF PREPROCESSING SYSTEM
+        // ============================================================================
+
+        /**
+         * ProgressManager - Tracks and displays preprocessing progress
+         * 5-stage progress indicator for PDF analysis
+         */
+        const PreprocessingProgressManager = {
+            stages: [
+                { name: 'Loading PDF', weight: 20 },
+                { name: 'Extracting text', weight: 20 },
+                { name: 'Detecting sections', weight: 20 },
+                { name: 'Finding tables', weight: 20 },
+                { name: 'Parsing citations', weight: 20 }
+            ],
+            currentStage: 0,
+            currentProgress: 0,
+
+            init: function() {
+                // Create progress bar if it doesn't exist
+                if (!document.getElementById('preprocessing-progress')) {
+                    const progressHTML = `
+                        <div id="preprocessing-progress" style="display:none; position: fixed; top: 20px; left: 50%; transform: translateX(-50%);
+                                                              background: white; padding: 20px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+                                                              z-index: 10000; min-width: 400px; max-width: 90%;">
+                            <div style="font-weight: bold; margin-bottom: 10px;" id="preprocessing-stage">Initializing...</div>
+                            <div style="background: #e0e0e0; height: 20px; border-radius: 10px; overflow: hidden; margin-bottom: 10px;">
+                                <div id="preprocessing-bar" style="background: linear-gradient(90deg, #4CAF50, #45a049); height: 100%; width: 0%;
+                                                                   transition: width 0.3s ease; border-radius: 10px;"></div>
+                            </div>
+                            <div style="font-size: 12px; color: #666;" id="preprocessing-detail">Starting preprocessing...</div>
+                        </div>
+                    `;
+                    document.body.insertAdjacentHTML('beforeend', progressHTML);
+                }
+            },
+
+            show: function() {
+                this.init();
+                document.getElementById('preprocessing-progress').style.display = 'block';
+                this.currentStage = 0;
+                this.currentProgress = 0;
+                this.update(0, 'Initializing preprocessing...');
+            },
+
+            hide: function() {
+                const el = document.getElementById('preprocessing-progress');
+                if (el) el.style.display = 'none';
+            },
+
+            setStage: function(stageIndex, detail = '') {
+                if (stageIndex < 0 || stageIndex >= this.stages.length) return;
+
+                this.currentStage = stageIndex;
+                const stage = this.stages[stageIndex];
+
+                // Calculate progress based on completed stages
+                let cumulativeProgress = 0;
+                for (let i = 0; i < stageIndex; i++) {
+                    cumulativeProgress += this.stages[i].weight;
+                }
+
+                this.currentProgress = cumulativeProgress;
+                this.update(this.currentProgress, detail || stage.name);
+
+                document.getElementById('preprocessing-stage').textContent = stage.name;
+            },
+
+            updateStageProgress: function(stageProgress, detail = '') {
+                // stageProgress: 0-1 within current stage
+                const stage = this.stages[this.currentStage];
+                const stageBaseProgress = this.currentProgress;
+                const totalProgress = stageBaseProgress + (stage.weight * stageProgress);
+
+                this.update(totalProgress, detail);
+            },
+
+            update: function(percentage, detail = '') {
+                percentage = Math.min(100, Math.max(0, percentage));
+
+                const bar = document.getElementById('preprocessing-bar');
+                const detailEl = document.getElementById('preprocessing-detail');
+
+                if (bar) bar.style.width = percentage + '%';
+                if (detailEl && detail) detailEl.textContent = detail;
+            },
+
+            complete: function(message = 'Preprocessing complete!') {
+                this.update(100, message);
+                setTimeout(() => this.hide(), 2000);
+            },
+
+            error: function(message = 'Preprocessing failed') {
+                const bar = document.getElementById('preprocessing-bar');
+                if (bar) bar.style.background = '#f44336';
+                this.update(this.currentProgress, '❌ ' + message);
+                setTimeout(() => this.hide(), 3000);
+            }
+        };
+
+        /**
+         * CacheManager - IndexedDB caching for parsed PDF structure
+         * Stores sections, tables, citations to avoid re-parsing
+         */
+        const PreprocessingCacheManager = {
+            dbName: 'PDFPreprocessingCache',
+            dbVersion: 1,
+            storeName: 'parsedPDFs',
+            db: null,
+
+            init: async function() {
+                return new Promise((resolve, reject) => {
+                    const request = indexedDB.open(this.dbName, this.dbVersion);
+
+                    request.onerror = () => {
+                        console.error('IndexedDB error:', request.error);
+                        reject(request.error);
+                    };
+
+                    request.onsuccess = () => {
+                        this.db = request.result;
+                        resolve(this.db);
+                    };
+
+                    request.onupgradeneeded = (event) => {
+                        const db = event.target.result;
+
+                        if (!db.objectStoreNames.contains(this.storeName)) {
+                            const store = db.createObjectStore(this.storeName, { keyPath: 'id' });
+                            store.createIndex('filename', 'filename', { unique: false });
+                            store.createIndex('timestamp', 'timestamp', { unique: false });
+                            store.createIndex('filesize', 'filesize', { unique: false });
+                        }
+                    };
+                });
+            },
+
+            generateKey: function(filename, filesize) {
+                // Unique key based on filename + filesize
+                return `${filename}_${filesize}`;
+            },
+
+            get: async function(filename, filesize) {
+                if (!this.db) await this.init();
+
+                const key = this.generateKey(filename, filesize);
+
+                return new Promise((resolve, reject) => {
+                    const tx = this.db.transaction([this.storeName], 'readonly');
+                    const store = tx.objectStore(this.storeName);
+                    const request = store.get(key);
+
+                    request.onsuccess = () => {
+                        const result = request.result;
+
+                        // Check if cache is expired (7 days)
+                        if (result) {
+                            const age = Date.now() - result.timestamp;
+                            const maxAge = 7 * 24 * 60 * 60 * 1000; // 7 days
+
+                            if (age > maxAge) {
+                                console.log('Cache expired, deleting...');
+                                this.delete(key);
+                                resolve(null);
+                            } else {
+                                console.log('Cache hit!', key);
+                                resolve(result.data);
+                            }
+                        } else {
+                            console.log('Cache miss:', key);
+                            resolve(null);
+                        }
+                    };
+
+                    request.onerror = () => reject(request.error);
+                });
+            },
+
+            set: async function(filename, filesize, data) {
+                if (!this.db) await this.init();
+
+                const key = this.generateKey(filename, filesize);
+
+                return new Promise((resolve, reject) => {
+                    const tx = this.db.transaction([this.storeName], 'readwrite');
+                    const store = tx.objectStore(this.storeName);
+
+                    const record = {
+                        id: key,
+                        filename: filename,
+                        filesize: filesize,
+                        timestamp: Date.now(),
+                        data: data
+                    };
+
+                    const request = store.put(record);
+
+                    request.onsuccess = () => {
+                        console.log('Cache stored:', key);
+                        resolve();
+                    };
+
+                    request.onerror = () => reject(request.error);
+                });
+            },
+
+            delete: async function(key) {
+                if (!this.db) await this.init();
+
+                return new Promise((resolve, reject) => {
+                    const tx = this.db.transaction([this.storeName], 'readwrite');
+                    const store = tx.objectStore(this.storeName);
+                    const request = store.delete(key);
+
+                    request.onsuccess = () => resolve();
+                    request.onerror = () => reject(request.error);
+                });
+            },
+
+            clearOld: async function(maxAge = 7 * 24 * 60 * 60 * 1000) {
+                if (!this.db) await this.init();
+
+                return new Promise((resolve, reject) => {
+                    const tx = this.db.transaction([this.storeName], 'readwrite');
+                    const store = tx.objectStore(this.storeName);
+                    const index = store.index('timestamp');
+
+                    const cutoff = Date.now() - maxAge;
+                    const range = IDBKeyRange.upperBound(cutoff);
+
+                    const request = index.openCursor(range);
+                    let deleted = 0;
+
+                    request.onsuccess = (event) => {
+                        const cursor = event.target.result;
+                        if (cursor) {
+                            cursor.delete();
+                            deleted++;
+                            cursor.continue();
+                        } else {
+                            console.log(`Cleared ${deleted} old cache entries`);
+                            resolve(deleted);
+                        }
+                    };
+
+                    request.onerror = () => reject(request.error);
+                });
+            },
+
+            clearAll: async function() {
+                if (!this.db) await this.init();
+
+                return new Promise((resolve, reject) => {
+                    const tx = this.db.transaction([this.storeName], 'readwrite');
+                    const store = tx.objectStore(this.storeName);
+                    const request = store.clear();
+
+                    request.onsuccess = () => {
+                        console.log('Cache cleared');
+                        resolve();
+                    };
+
+                    request.onerror = () => reject(request.error);
+                });
+            }
+        };
+
+        /**
+         * PDFStructureAnalyzer - Main preprocessing orchestrator
+         * Extracts text with coordinates, detects sections, tables, and citations
+         */
+        const PDFStructureAnalyzer = {
+            // Extract enhanced text content from all pages
+            extractTextWithMetadata: async function(pdfDoc) {
+                const pages = [];
+
+                for (let pageNum = 1; pageNum <= pdfDoc.numPages; pageNum++) {
+                    PreprocessingProgressManager.updateStageProgress(
+                        pageNum / pdfDoc.numPages,
+                        `Extracting text from page ${pageNum} of ${pdfDoc.numPages}...`
+                    );
+
+                    const page = await pdfDoc.getPage(pageNum);
+                    const viewport = page.getViewport({ scale: 1.0 });
+                    const textContent = await page.getTextContent();
+
+                    // Extract structured text with coordinates and font info
+                    const items = textContent.items.map(item => ({
+                        text: item.str,
+                        x: item.transform[4],
+                        y: viewport.height - item.transform[5], // Convert to top-left origin
+                        width: item.width,
+                        height: item.height,
+                        fontSize: Math.abs(item.transform[0]), // Scale factor = font size
+                        fontName: item.fontName
+                    }));
+
+                    // Calculate font statistics for this page
+                    const fontSizes = items.map(i => i.fontSize).filter(s => s > 0);
+                    const avgFontSize = fontSizes.length > 0
+                        ? fontSizes.reduce((a,b) => a+b, 0) / fontSizes.length
+                        : 12;
+                    const maxFontSize = fontSizes.length > 0 ? Math.max(...fontSizes) : 12;
+
+                    pages.push({
+                        pageNum,
+                        width: viewport.width,
+                        height: viewport.height,
+                        items,
+                        fontStatistics: {
+                            avg: avgFontSize,
+                            max: maxFontSize,
+                            min: Math.min(...fontSizes)
+                        },
+                        itemCount: items.length
+                    });
+                }
+
+                return pages;
+            },
+
+            // Main analysis entry point
+            analyze: async function(pdfDoc, filename, filesize) {
+                try {
+                    PreprocessingProgressManager.show();
+
+                    // Stage 1: Loading (already done by PDFLoader)
+                    PreprocessingProgressManager.setStage(0, 'PDF loaded successfully');
+
+                    // Check cache first
+                    const cached = await PreprocessingCacheManager.get(filename, filesize);
+                    if (cached) {
+                        console.log('Using cached preprocessing results');
+                        PreprocessingProgressManager.complete('Loaded from cache!');
+                        return cached;
+                    }
+
+                    // Stage 2: Extract text with metadata
+                    PreprocessingProgressManager.setStage(1, 'Extracting text and metadata...');
+                    const pages = await this.extractTextWithMetadata(pdfDoc);
+
+                    // Stage 3: Detect sections
+                    PreprocessingProgressManager.setStage(2, 'Identifying document sections...');
+                    const sections = await this.detectSections(pages);
+
+                    // Stage 4: Find tables
+                    PreprocessingProgressManager.setStage(3, 'Detecting tables...');
+                    const tables = await this.detectTables(pages);
+
+                    // Stage 5: Parse citations
+                    PreprocessingProgressManager.setStage(4, 'Extracting citations...');
+                    const citations = await this.extractCitations(pages, sections);
+
+                    // Compile results
+                    const result = {
+                        filename,
+                        filesize,
+                        totalPages: pdfDoc.numPages,
+                        timestamp: new Date().toISOString(),
+                        pages,
+                        sections,
+                        tables,
+                        citations,
+                        metadata: {
+                            totalTextItems: pages.reduce((sum, p) => sum + p.itemCount, 0),
+                            sectionCount: sections.length,
+                            tableCount: tables.length,
+                            citationCount: citations.length
+                        }
+                    };
+
+                    // Cache the results
+                    await PreprocessingCacheManager.set(filename, filesize, result);
+
+                    PreprocessingProgressManager.complete(
+                        `Analysis complete: ${sections.length} sections, ${tables.length} tables, ${citations.length} citations`
+                    );
+
+                    return result;
+
+                } catch (error) {
+                    console.error('Preprocessing error:', error);
+                    PreprocessingProgressManager.error(error.message || 'Preprocessing failed');
+                    throw error;
+                }
+            },
+
+            // Detect sections using font size and pattern matching
+            detectSections: async function(pages) {
+                const sections = [];
+                const patterns = {
+                    abstract: /\b(abstract|summary)\b/i,
+                    introduction: /\b(introduction|background)\b/i,
+                    methods: /\b(methods?|materials? and methods?|methodology|patients? and methods?)\b/i,
+                    results: /\b(results?|findings?|outcomes?)\b/i,
+                    discussion: /\b(discussion|conclusion)\b/i,
+                    references: /\b(references?|bibliography|citations?|works? cited)\b/i
+                };
+
+                pages.forEach(page => {
+                    const { items, fontStatistics } = page;
+                    const headingThreshold = fontStatistics.avg * 1.15; // 15% larger than average
+
+                    items.forEach((item, index) => {
+                        // Check if this is a heading (larger font)
+                        const isHeading = item.fontSize > headingThreshold ||
+                                        item.fontSize === fontStatistics.max;
+
+                        if (isHeading && item.text.length > 2) {
+                            // Check against section patterns
+                            for (const [sectionType, pattern] of Object.entries(patterns)) {
+                                if (pattern.test(item.text)) {
+                                    sections.push({
+                                        type: sectionType,
+                                        title: item.text.trim(),
+                                        page: page.pageNum,
+                                        y: item.y,
+                                        x: item.x,
+                                        fontSize: item.fontSize
+                                    });
+                                    break;
+                                }
+                            }
+                        }
+                    });
+                });
+
+                // Sort by page and Y position
+                sections.sort((a, b) => {
+                    if (a.page !== b.page) return a.page - b.page;
+                    return a.y - b.y;
+                });
+
+                return sections;
+            },
+
+            // Detect tables using coordinate clustering
+            detectTables: async function(pages) {
+                const tables = [];
+
+                // This is a placeholder - table detection is complex
+                // For now, we'll implement a simple version
+                // TODO: Enhance with proper coordinate clustering algorithm
+
+                pages.forEach(page => {
+                    // Look for "Table" labels
+                    page.items.forEach((item, index) => {
+                        if (/^Table\s+\d+/i.test(item.text)) {
+                            tables.push({
+                                page: page.pageNum,
+                                label: item.text.trim(),
+                                x: item.x,
+                                y: item.y,
+                                // Estimate bounding box (simplified)
+                                bounds: {
+                                    x: item.x,
+                                    y: item.y,
+                                    width: 500, // Placeholder
+                                    height: 200 // Placeholder
+                                }
+                            });
+                        }
+                    });
+                });
+
+                return tables;
+            },
+
+            // Extract citations from References section
+            extractCitations: async function(pages, sections) {
+                const citations = [];
+
+                // Find References section
+                const referencesSection = sections.find(s => s.type === 'references');
+                if (!referencesSection) {
+                    console.log('No references section found');
+                    return citations;
+                }
+
+                // Extract text from references section onwards
+                const refStartPage = referencesSection.page;
+                let currentCitation = '';
+                let citationNumber = 0;
+
+                pages.forEach(page => {
+                    if (page.pageNum < refStartPage) return;
+
+                    // Sort items by Y position (top to bottom)
+                    const sortedItems = [...page.items].sort((a, b) => a.y - b.y);
+
+                    sortedItems.forEach(item => {
+                        const text = item.text.trim();
+
+                        // Detect citation start (number or author name)
+                        if (/^\[?\d+\]?\.?\s*$/.test(text) || /^[A-Z][a-z]+,?\s+[A-Z]/.test(text)) {
+                            // Save previous citation
+                            if (currentCitation) {
+                                citations.push(this.parseCitation(currentCitation, citationNumber));
+                                citationNumber++;
+                            }
+                            currentCitation = text;
+                        } else {
+                            currentCitation += ' ' + text;
+                        }
+                    });
+                });
+
+                // Add last citation
+                if (currentCitation) {
+                    citations.push(this.parseCitation(currentCitation, citationNumber));
+                }
+
+                return citations;
+            },
+
+            // Parse individual citation to extract DOI, PMID, etc.
+            parseCitation: function(text, number) {
+                // Extract DOI
+                const doiMatch = text.match(/10\.\d{4,}\/[^\s]+/);
+                const doi = doiMatch ? doiMatch[0].replace(/[.,;]$/, '') : null;
+
+                // Extract PMID
+                const pmidMatch = text.match(/PMID:?\s*(\d+)/i);
+                const pmid = pmidMatch ? pmidMatch[1] : null;
+
+                // Extract year
+                const yearMatch = text.match(/\b(19|20)\d{2}\b/);
+                const year = yearMatch ? yearMatch[0] : null;
+
+                // Extract journal (simplified - text between year and DOI/PMID)
+                let journal = null;
+                if (year) {
+                    const afterYear = text.split(year)[1];
+                    if (afterYear) {
+                        journal = afterYear.split(/DOI|PMID|10\.\d/i)[0].trim();
+                        journal = journal.substring(0, 100); // Limit length
+                    }
+                }
+
+                return {
+                    number,
+                    text: text.trim(),
+                    doi,
+                    pmid,
+                    year,
+                    journal
+                };
+            }
+        };
+
+        /**
+         * PreprocessingSidebarManager - Manages the interactive sidebar UI
+         * Displays sections, tables, citations with navigation
+         */
+        const PreprocessingSidebarManager = {
+            isOpen: false,
+            overlaysEnabled: true,
+
+            init: function() {
+                // Toggle sidebar button
+                const toggleBtn = document.getElementById('toggle-sidebar');
+                if (toggleBtn) {
+                    toggleBtn.addEventListener('click', () => this.toggle());
+                }
+
+                // Export button
+                const exportBtn = document.getElementById('export-structure-btn');
+                if (exportBtn) {
+                    exportBtn.addEventListener('click', () => this.exportJSON());
+                }
+
+                // Toggle overlays button
+                const overlaysBtn = document.getElementById('toggle-overlays-btn');
+                if (overlaysBtn) {
+                    overlaysBtn.addEventListener('click', () => this.toggleOverlays());
+                }
+            },
+
+            toggle: function() {
+                const sidebar = document.getElementById('preprocessing-sidebar');
+                const btn = document.getElementById('toggle-sidebar');
+
+                if (!sidebar || !btn) return;
+
+                this.isOpen = !this.isOpen;
+
+                if (this.isOpen) {
+                    sidebar.classList.remove('collapsed');
+                    btn.textContent = '▶';
+                } else {
+                    sidebar.classList.add('collapsed');
+                    btn.textContent = '◀';
+                }
+            },
+
+            populate: function(preprocessingData) {
+                if (!preprocessingData) return;
+
+                console.log('Populating sidebar with preprocessing data:', preprocessingData);
+
+                // Update overview
+                const overview = document.getElementById('doc-overview');
+                if (overview) {
+                    overview.innerHTML = `
+                        <p><strong>File:</strong> ${preprocessingData.filename}</p>
+                        <p><strong>Pages:</strong> ${preprocessingData.totalPages}</p>
+                        <p><strong>Analyzed:</strong> ${new Date(preprocessingData.timestamp).toLocaleString()}</p>
+                        <p><strong>Text Items:</strong> ${preprocessingData.metadata.totalTextItems.toLocaleString()}</p>
+                    `;
+                }
+
+                // Populate sections
+                this.populateSections(preprocessingData.sections);
+
+                // Populate tables
+                this.populateTables(preprocessingData.tables);
+
+                // Populate citations
+                this.populateCitations(preprocessingData.citations);
+
+                // Update counts
+                const sectionCount = document.getElementById('section-count');
+                const tableCount = document.getElementById('table-count');
+                const citationCount = document.getElementById('citation-count');
+
+                if (sectionCount) sectionCount.textContent = preprocessingData.sections.length;
+                if (tableCount) tableCount.textContent = preprocessingData.tables.length;
+                if (citationCount) citationCount.textContent = preprocessingData.citations.length;
+
+                // Auto-open sidebar
+                if (!this.isOpen) this.toggle();
+            },
+
+            populateSections: function(sections) {
+                const list = document.getElementById('sections-list');
+                if (!list) return;
+
+                list.innerHTML = '';
+
+                sections.forEach(section => {
+                    const li = document.createElement('li');
+                    li.innerHTML = `
+                        <strong>${section.type}</strong><br>
+                        <small>${section.title} (Page ${section.page})</small>
+                    `;
+                    li.addEventListener('click', () => {
+                        PDFRenderer.renderPage(section.page);
+                        StatusManager.show(`📄 Jumped to ${section.type} section`, 'info', 2000);
+                    });
+                    list.appendChild(li);
+                });
+            },
+
+            populateTables: function(tables) {
+                const list = document.getElementById('tables-list');
+                if (!list) return;
+
+                list.innerHTML = '';
+
+                tables.forEach(table => {
+                    const li = document.createElement('li');
+                    li.innerHTML = `
+                        <strong>${table.label}</strong><br>
+                        <small>Page ${table.page}</small>
+                    `;
+                    li.addEventListener('click', () => {
+                        PDFRenderer.renderPage(table.page);
+                        StatusManager.show(`📊 Jumped to ${table.label}`, 'info', 2000);
+                    });
+                    list.appendChild(li);
+                });
+            },
+
+            populateCitations: function(citations) {
+                const list = document.getElementById('citations-list');
+                if (!list) return;
+
+                list.innerHTML = '';
+
+                const displayCount = Math.min(10, citations.length);
+
+                citations.slice(0, displayCount).forEach((citation, index) => {
+                    const li = document.createElement('li');
+
+                    const shortText = citation.text.length > 80
+                        ? citation.text.substring(0, 80) + '...'
+                        : citation.text;
+
+                    li.innerHTML = `
+                        <small>${shortText}</small><br>
+                        ${citation.doi ? `<small><strong>DOI:</strong> ${citation.doi}</small><br>` : ''}
+                        ${citation.pmid ? `<small><strong>PMID:</strong> ${citation.pmid}</small>` : ''}
+                    `;
+                    list.appendChild(li);
+                });
+
+                if (citations.length > displayCount) {
+                    const more = document.createElement('li');
+                    more.style.background = '#e8eaf6';
+                    more.style.borderLeft = '3px solid #5e35b1';
+                    more.style.cursor = 'default';
+                    more.innerHTML = `<small style="color: #5e35b1; font-weight: 600;">... and ${citations.length - displayCount} more citations</small>`;
+                    list.appendChild(more);
+                }
+            },
+
+            exportJSON: function() {
+                const state = AppStateManager.getState();
+                const data = state.preprocessingData;
+
+                if (!data) {
+                    StatusManager.show('⚠️ No preprocessing data to export', 'warning');
+                    return;
+                }
+
+                const json = JSON.stringify(data, null, 2);
+                const blob = new Blob([json], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `${data.filename.replace('.pdf', '')}_structure.json`;
+                a.click();
+
+                URL.revokeObjectURL(url);
+                StatusManager.show('💾 Structure exported successfully!', 'success', 3000);
+            },
+
+            toggleOverlays: function() {
+                this.overlaysEnabled = !this.overlaysEnabled;
+
+                const btn = document.getElementById('toggle-overlays-btn');
+                if (btn) {
+                    btn.textContent = this.overlaysEnabled ? '👁️ Toggle Overlays' : '🚫 Toggle Overlays';
+                }
+
+                if (this.overlaysEnabled) {
+                    PreprocessingOverlayRenderer.show();
+                    StatusManager.show('👁️ Overlays enabled', 'info', 2000);
+                } else {
+                    PreprocessingOverlayRenderer.hide();
+                    StatusManager.show('🚫 Overlays disabled', 'info', 2000);
+                }
+            }
+        };
+
+        /**
+         * PreprocessingOverlayRenderer - Renders bounding boxes on PDF canvas
+         * Shows sections (blue), tables (green), citations (yellow)
+         */
+        const PreprocessingOverlayRenderer = {
+            enabled: true,
+            currentPage: 1,
+
+            show: function() {
+                this.enabled = true;
+                this.render(this.currentPage);
+            },
+
+            hide: function() {
+                this.enabled = false;
+                this.clearOverlays();
+            },
+
+            render: function(pageNum) {
+                if (!this.enabled) return;
+
+                this.currentPage = pageNum;
+                const state = AppStateManager.getState();
+                const data = state.preprocessingData;
+
+                if (!data) return;
+
+                // Find the PDF canvas for this page
+                const pageContainer = document.getElementById(`pdf-page-${pageNum}`);
+                if (!pageContainer) return;
+
+                const canvas = pageContainer.querySelector('canvas');
+                if (!canvas) return;
+
+                // Create or get overlay canvas
+                let overlay = pageContainer.querySelector('.pdf-overlay');
+                if (!overlay) {
+                    overlay = document.createElement('canvas');
+                    overlay.className = 'pdf-overlay';
+                    overlay.style.position = 'absolute';
+                    overlay.style.top = '0';
+                    overlay.style.left = '0';
+                    overlay.style.pointerEvents = 'none';
+                    overlay.width = canvas.width;
+                    overlay.height = canvas.height;
+                    pageContainer.appendChild(overlay);
+                }
+
+                const ctx = overlay.getContext('2d');
+                ctx.clearRect(0, 0, overlay.width, overlay.height);
+
+                // Get scale factor
+                const scale = canvas.width / data.pages[pageNum - 1]?.width || 1;
+
+                // Draw section boxes (blue)
+                const pageSections = data.sections.filter(s => s.page === pageNum);
+                pageSections.forEach(section => {
+                    this.drawBox(
+                        ctx,
+                        section.x * scale,
+                        section.y * scale,
+                        400 * scale,
+                        30 * scale,
+                        'rgba(33, 150, 243, 0.15)',
+                        '#2196F3',
+                        2
+                    );
+                });
+
+                // Draw table boxes (green)
+                const pageTables = data.tables.filter(t => t.page === pageNum);
+                pageTables.forEach(table => {
+                    const bounds = table.bounds;
+                    this.drawBox(
+                        ctx,
+                        bounds.x * scale,
+                        bounds.y * scale,
+                        bounds.width * scale,
+                        bounds.height * scale,
+                        'rgba(76, 175, 80, 0.15)',
+                        '#4CAF50',
+                        3
+                    );
+                });
+            },
+
+            drawBox: function(ctx, x, y, width, height, fillColor, strokeColor, lineWidth = 2) {
+                // Fill
+                ctx.fillStyle = fillColor;
+                ctx.fillRect(x, y, width, height);
+
+                // Stroke
+                ctx.strokeStyle = strokeColor;
+                ctx.lineWidth = lineWidth;
+                ctx.strokeRect(x, y, width, height);
+            },
+
+            clearOverlays: function() {
+                const overlays = document.querySelectorAll('.pdf-overlay');
+                overlays.forEach(overlay => overlay.remove());
+            }
+        };
+
+        // Expose PreprocessingOverlayRenderer globally for sidebar and other components
+        window.PreprocessingOverlayRenderer = PreprocessingOverlayRenderer;
+
+        // Initialize sidebar on DOM load
+        window.addEventListener('DOMContentLoaded', () => {
+            PreprocessingSidebarManager.init();
+        });
+
+        // ========================================================================
+        // SMART SUGGESTION ENGINE
+        // ========================================================================
+
+        /**
+         * FieldSuggestionEngine - Maps form fields to relevant PDF sections/tables
+         * Provides intelligent suggestions for where to find data
+         */
+        const FieldSuggestionEngine = {
+            preprocessingData: null,
+
+            // Field mapping database: field ID → likely locations
+            fieldMappings: {
+                // Study ID fields
+                'citation': { sections: ['abstract', 'methods'], tables: [], keywords: ['study', 'title', 'authors'], priority: 'HIGH' },
+                'doi': { sections: ['abstract', 'references'], tables: [], keywords: ['doi', 'digital object'], priority: 'HIGH' },
+                'pmid': { sections: ['abstract', 'references'], tables: [], keywords: ['pmid', 'pubmed'], priority: 'HIGH' },
+                'journal': { sections: ['abstract'], tables: [], keywords: ['journal', 'published'], priority: 'MEDIUM' },
+                'year': { sections: ['abstract'], tables: [], keywords: ['year', '20'], priority: 'MEDIUM' },
+
+                // Demographics
+                'totalN': { sections: ['methods', 'results'], tables: [1, 2], keywords: ['patients', 'enrolled', 'sample size', 'total'], priority: 'HIGH' },
+                'surgicalN': { sections: ['methods', 'results'], tables: [1, 3], keywords: ['surgical', 'intervention', 'treatment'], priority: 'HIGH' },
+                'controlN': { sections: ['methods', 'results'], tables: [1, 3], keywords: ['control', 'conservative', 'medical'], priority: 'HIGH' },
+                'ageMean': { sections: ['methods', 'results'], tables: [1], keywords: ['age', 'mean', 'years', 'old'], priority: 'HIGH' },
+                'ageSD': { sections: ['methods', 'results'], tables: [1], keywords: ['age', 'sd', 'standard deviation'], priority: 'HIGH' },
+                'maleN': { sections: ['methods', 'results'], tables: [1], keywords: ['male', 'sex', 'gender', 'men'], priority: 'MEDIUM' },
+                'femaleN': { sections: ['methods', 'results'], tables: [1], keywords: ['female', 'sex', 'gender', 'women'], priority: 'MEDIUM' },
+
+                // Baseline characteristics
+                'prestrokeMRS': { sections: ['methods', 'results'], tables: [1], keywords: ['baseline', 'mrs', 'pre-stroke', 'modified rankin'], priority: 'MEDIUM' },
+                'nihssMean': { sections: ['methods', 'results'], tables: [1], keywords: ['nihss', 'stroke severity', 'neurological'], priority: 'MEDIUM' },
+                'gcsMean': { sections: ['methods', 'results'], tables: [1], keywords: ['gcs', 'glasgow', 'coma scale'], priority: 'MEDIUM' },
+
+                // Imaging
+                'vascularTerritory': { sections: ['methods', 'results'], tables: [1, 2], keywords: ['vascular', 'territory', 'pica', 'sca', 'aica'], priority: 'MEDIUM' },
+                'infarctVolume': { sections: ['results'], tables: [2], keywords: ['volume', 'infarct', 'mm3', 'ml', 'cerebellar'], priority: 'HIGH' },
+                'strokeVolumeCerebellum': { sections: ['results'], tables: [2], keywords: ['cerebellar', 'volume', 'stroke'], priority: 'MEDIUM' },
+                'brainstemInvolvement': { sections: ['results'], tables: [2], keywords: ['brainstem', 'midbrain', 'pons'], priority: 'MEDIUM' },
+
+                // Outcomes
+                'mortality_deaths': { sections: ['results'], tables: [4, 5], keywords: ['mortality', 'deaths', 'deceased', 'died'], priority: 'HIGH' },
+                'mortality_total': { sections: ['results'], tables: [4, 5], keywords: ['mortality', 'total', 'patients'], priority: 'HIGH' },
+                'mrs_0': { sections: ['results'], tables: [5], keywords: ['mrs', 'modified rankin', 'score 0', 'no symptoms'], priority: 'HIGH' },
+                'mrs_6': { sections: ['results'], tables: [5], keywords: ['mrs', 'modified rankin', 'score 6', 'dead'], priority: 'HIGH' },
+
+                // Interventions
+                'intervention_type': { sections: ['methods', 'results'], tables: [3], keywords: ['sdc', 'evd', 'decompression', 'surgery'], priority: 'HIGH' },
+                'intervention_time': { sections: ['methods', 'results'], tables: [3], keywords: ['time to surgery', 'hours', 'timing'], priority: 'HIGH' },
+
+                // Predictors
+                'pred_var': { sections: ['discussion', 'results'], tables: [6], keywords: ['predictor', 'factor', 'associated'], priority: 'MEDIUM' },
+                'pred_effect': { sections: ['discussion', 'results'], tables: [6], keywords: ['odds ratio', 'or', 'hr', 'hazard'], priority: 'MEDIUM' },
+                'pred_pvalue': { sections: ['discussion', 'results'], tables: [6], keywords: ['p-value', 'p <', 'significance'], priority: 'MEDIUM' }
+            },
+
+            init: function(preprocessingData) {
+                this.preprocessingData = preprocessingData;
+                console.log('FieldSuggestionEngine initialized with', preprocessingData.metadata);
+            },
+
+            getSuggestions: function(fieldId, fieldLabel) {
+                if (!this.preprocessingData) return [];
+
+                const suggestions = [];
+                const mapping = this.fieldMappings[fieldId] || this.inferMappingFromLabel(fieldLabel);
+
+                if (!mapping) return [];
+
+                // Find matching sections
+                mapping.sections.forEach(sectionType => {
+                    const section = this.preprocessingData.sections.find(s =>
+                        s.type === sectionType || s.title.toLowerCase().includes(sectionType)
+                    );
+                    if (section) {
+                        suggestions.push({
+                            type: 'SECTION',
+                            title: section.title,
+                            page: section.page,
+                            relevance: mapping.priority === 'HIGH' ? 0.9 : 0.7,
+                            sectionType: section.type,
+                            action: 'jumpToPage'
+                        });
+                    }
+                });
+
+                // Find matching tables
+                mapping.tables.forEach(tableNum => {
+                    const table = this.preprocessingData.tables.find(t =>
+                        t.label.includes(`Table ${tableNum}`) || t.label.includes(`${tableNum}`)
+                    );
+                    if (table) {
+                        suggestions.push({
+                            type: 'TABLE',
+                            title: table.label,
+                            page: table.page,
+                            relevance: mapping.priority === 'HIGH' ? 0.95 : 0.85,
+                            tableData: table,
+                            action: 'jumpToPage'
+                        });
+                    }
+                });
+
+                // Sort by relevance
+                return suggestions.sort((a, b) => b.relevance - a.relevance);
+            },
+
+            inferMappingFromLabel: function(label) {
+                if (!label) return null;
+
+                const lower = label.toLowerCase();
+
+                // Simple keyword matching
+                if (lower.includes('age')) return { sections: ['methods', 'results'], tables: [1], keywords: ['age'], priority: 'HIGH' };
+                if (lower.includes('mortality') || lower.includes('death')) return { sections: ['results'], tables: [4, 5], keywords: ['mortality'], priority: 'HIGH' };
+                if (lower.includes('mrs') || lower.includes('rankin')) return { sections: ['results'], tables: [5], keywords: ['mrs'], priority: 'HIGH' };
+                if (lower.includes('volume')) return { sections: ['results'], tables: [2], keywords: ['volume'], priority: 'MEDIUM' };
+
+                return null;
+            }
+        };
+
+        /**
+         * SuggestionUIManager - Handles suggestion popup display and interactions
+         */
+        const SuggestionUIManager = {
+            currentPopup: null,
+            enabled: true,
+
+            init: function() {
+                // Create popup container if not exists
+                if (!document.getElementById('suggestion-popup')) {
+                    const popup = document.createElement('div');
+                    popup.id = 'suggestion-popup';
+                    popup.className = 'suggestion-popup hidden';
+                    popup.innerHTML = `
+                        <div class="suggestion-header">
+                            <span class="suggestion-title">💡 Smart Suggestions</span>
+                            <button class="suggestion-close" onclick="SuggestionUIManager.hide()">✕</button>
+                        </div>
+                        <div class="suggestion-content"></div>
+                        <div class="suggestion-footer">
+                            <button class="suggestion-disable" onclick="SuggestionUIManager.toggleEnabled()">Disable for session</button>
+                        </div>
+                    `;
+                    document.body.appendChild(popup);
+                }
+
+                // Attach listeners to all form fields
+                this.attachFieldListeners();
+            },
+
+            attachFieldListeners: function() {
+                const fields = document.querySelectorAll('input[type="text"], input[type="number"], textarea, select');
+                fields.forEach(field => {
+                    field.addEventListener('focus', (e) => this.onFieldFocus(e));
+                    field.addEventListener('blur', () => this.hideDelayed());
+                });
+            },
+
+            onFieldFocus: function(event) {
+                if (!this.enabled) return;
+                if (!FieldSuggestionEngine.preprocessingData) return;
+
+                const field = event.target;
+                const fieldId = field.id;
+                const fieldLabel = field.labels?.[0]?.textContent || field.placeholder || fieldId;
+
+                // Don't show if field already has value
+                if (field.value && field.value.trim().length > 0) return;
+
+                const suggestions = FieldSuggestionEngine.getSuggestions(fieldId, fieldLabel);
+
+                if (suggestions.length > 0) {
+                    this.show(field, fieldLabel, suggestions);
+                }
+            },
+
+            show: function(field, fieldLabel, suggestions) {
+                const popup = document.getElementById('suggestion-popup');
+                if (!popup) return;
+
+                // Position popup near field
+                const rect = field.getBoundingClientRect();
+                popup.style.top = (rect.bottom + window.scrollY + 5) + 'px';
+                popup.style.left = rect.left + 'px';
+
+                // Update title
+                popup.querySelector('.suggestion-title').textContent = `💡 Suggestions for "${fieldLabel}"`;
+
+                // Render suggestions
+                const content = popup.querySelector('.suggestion-content');
+                content.innerHTML = suggestions.map((s, i) => `
+                    <div class="suggestion-item ${i === 0 ? 'suggestion-top' : ''}" data-page="${s.page}">
+                        <div class="suggestion-badge ${s.type.toLowerCase()}">${s.type}</div>
+                        <div class="suggestion-info">
+                            <div class="suggestion-item-title">${s.title}</div>
+                            <div class="suggestion-item-meta">Page ${s.page} • ${Math.round(s.relevance * 100)}% match</div>
+                        </div>
+                        <button class="suggestion-action" onclick="SuggestionUIManager.jumpToPage(${s.page})">
+                            Jump to Page →
+                        </button>
+                    </div>
+                `).join('');
+
+                popup.classList.remove('hidden');
+                this.currentPopup = popup;
+            },
+
+            hide: function() {
+                const popup = document.getElementById('suggestion-popup');
+                if (popup) {
+                    popup.classList.add('hidden');
+                }
+                this.currentPopup = null;
+            },
+
+            hideDelayed: function() {
+                setTimeout(() => {
+                    // Only hide if user didn't click inside popup
+                    const popup = document.getElementById('suggestion-popup');
+                    if (popup && !popup.matches(':hover')) {
+                        this.hide();
+                    }
+                }, 200);
+            },
+
+            jumpToPage: function(pageNum) {
+                PDFRenderer.renderPage(pageNum);
+                this.hide();
+                StatusManager.show(`Jumped to page ${pageNum}`, 'info', 2000);
+            },
+
+            toggleEnabled: function() {
+                this.enabled = !this.enabled;
+                this.hide();
+                StatusManager.show(
+                    this.enabled ? 'Smart suggestions enabled' : 'Smart suggestions disabled for this session',
+                    this.enabled ? 'success' : 'warning',
+                    3000
+                );
+            }
+        };
+
+        // Initialize suggestion UI on DOM load
+        window.addEventListener('DOMContentLoaded', () => {
+            SuggestionUIManager.init();
+        });
+
+
         // --- PDF Modules ---
         window.pdfjsLib.GlobalWorkerOptions.workerSrc = PDFConfig.workerSrc;
 
@@ -3444,6 +4993,51 @@
                     StatusManager.showLoading(false);
                     StatusManager.show(`✓ PDF loaded: ${sanitizedName} (${pdfDoc.numPages} pages)`, 'success');
                     await PDFRenderer.renderPage(1); // Render first page after load
+
+                    // ===== PDF PREPROCESSING =====
+                    // Automatically analyze PDF structure (sections, tables, citations)
+                    try {
+                        const preprocessingResult = await PDFStructureAnalyzer.analyze(
+                            pdfDoc,
+                            sanitizedName,
+                            file.size
+                        );
+
+                        // Store preprocessing results in app state
+                        AppStateManager.setState({
+                            preprocessingData: preprocessingResult
+                        });
+
+                        console.log('Preprocessing complete:', preprocessingResult.metadata);
+
+                        // Show summary notification
+                        const { sectionCount, tableCount, citationCount } = preprocessingResult.metadata;
+                        StatusManager.show(
+                            `📊 Document analyzed: ${sectionCount} sections, ${tableCount} tables, ${citationCount} citations`,
+                            'success',
+                            5000
+                        );
+
+                        // Populate sidebar with preprocessing results
+                        PreprocessingSidebarManager.populate(preprocessingResult);
+
+                        // Render overlays on first page
+                        PreprocessingOverlayRenderer.render(1);
+
+                        // Initialize smart suggestion engine
+                        FieldSuggestionEngine.init(preprocessingResult);
+                        console.log('Smart Suggestion Engine enabled - focus on form fields to see suggestions');
+
+                    } catch (preprocessingError) {
+                        console.error('Preprocessing failed (non-fatal):', preprocessingError);
+                        // Don't block PDF usage if preprocessing fails
+                        StatusManager.show(
+                            '⚠️ Document structure analysis failed (PDF still usable)',
+                            'warning',
+                            3000
+                        );
+                    }
+
                     return pdfDoc;
                 } catch (error) {
                     console.error("PDF Load Error:", error);
@@ -3609,6 +5203,8 @@
 
                     const pageDiv = document.createElement('div');
                     pageDiv.className = 'pdf-page';
+                    pageDiv.id = `pdf-page-${pageNum}`;  // Add ID for overlay rendering
+                    pageDiv.style.position = 'relative';  // For absolute positioning of overlays
                     pageDiv.style.width = viewport.width + 'px';
                     pageDiv.style.height = viewport.height + 'px';
 
@@ -3676,6 +5272,9 @@
                     document.getElementById('page-num').value = pageNum.toString();
                     clearSearchMarkers(); // Use global helper
 
+                    // Render preprocessing overlays for this page
+                    PreprocessingOverlayRenderer.render(pageNum);
+
                  } catch (error) {
                     console.error("PDF Render Error:", error);
                     StatusManager.show(`Failed to render page ${pageNum}: ${error.message || 'Unknown error'}`, 'error');
@@ -3688,6 +5287,9 @@
                 }
             }
         };
+
+        // Expose PDFRenderer globally for sidebar navigation
+        window.PDFRenderer = PDFRenderer;
 
         // --- Extraction Tracker ---
         const ExtractionTracker = {
@@ -4206,63 +5808,131 @@
          * @returns {Promise<string>} - The text content from the API response.
          */
         async function callGeminiWithSearch(systemPrompt, userPrompt, jsonSchema) {
-            const apiKey = CONFIG.AI_API_KEY; // API key is now from CONFIG
+            const apiKey = CONFIG.AI_API_KEY;
             if (!apiKey) {
                 throw new Error("AI API Key is missing in CONFIG.AI_API_KEY");
             }
-            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
-             
+
+            // Strategy 1: Try Gemini 2.5 Flash with modern google_search tool
+            try {
+                console.log("🔍 Attempting: Gemini 2.5 Flash + google_search (modern)");
+                StatusManager.show('Trying Gemini 2.5 Flash with Search...', 'info');
+
+                const result = await tryGeminiSearchAPI({
+                    apiKey,
+                    model: 'gemini-2.5-flash',
+                    systemPrompt,
+                    userPrompt,
+                    jsonSchema,
+                    searchTool: { "google_search": {} }, // Modern syntax
+                    useSchema: true
+                });
+
+                console.log("✅ Success with Gemini 2.5 Flash + google_search");
+                return result;
+
+            } catch (error1) {
+                console.warn("❌ Gemini 2.5 Flash + google_search failed:", error1.message);
+
+                // Strategy 2: Try Gemini 2.0 Flash with google_search (alternative modern model)
+                try {
+                    console.log("🔍 Attempting: Gemini 2.0 Flash + google_search (alternative)");
+                    StatusManager.show('Retrying with Gemini 2.0 Flash...', 'info');
+
+                    const result = await tryGeminiSearchAPI({
+                        apiKey,
+                        model: 'gemini-2.0-flash',
+                        systemPrompt,
+                        userPrompt,
+                        jsonSchema,
+                        searchTool: { "google_search": {} }, // Modern syntax
+                        useSchema: true
+                    });
+
+                    console.log("✅ Success with Gemini 2.0 Flash + google_search");
+                    return result;
+
+                } catch (error2) {
+                    console.warn("❌ Gemini 2.0 Flash + google_search failed:", error2.message);
+
+                    // Strategy 3: Try Gemini 2.5 Flash without Search (fallback)
+                    try {
+                        console.log("🔍 Attempting: Gemini 2.5 Flash WITHOUT search (schema only)");
+                        StatusManager.show('Retrying without Search...', 'info');
+
+                        const result = await tryGeminiSearchAPI({
+                            apiKey,
+                            model: 'gemini-2.5-flash',
+                            systemPrompt,
+                            userPrompt,
+                            jsonSchema,
+                            searchTool: null, // No search
+                            useSchema: true
+                        });
+
+                        console.log("✅ Success with Gemini 2.5 Flash (no search)");
+                        return result;
+
+                    } catch (error3) {
+                        console.error("❌ All strategies failed:", { error1, error2, error3 });
+                        throw new Error(`All citation search methods failed. Last error: ${error3.message}`);
+                    }
+                }
+            }
+        }
+
+        /**
+         * Helper function to try a specific Gemini API configuration
+         */
+        async function tryGeminiSearchAPI({ apiKey, model, systemPrompt, userPrompt, jsonSchema, searchTool, useSchema }) {
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
+
             const payload = {
                 contents: [{ parts: [{ text: userPrompt }] }],
                 systemInstruction: {
                     parts: [{ text: systemPrompt }]
-                },
-                tools: [{ "google_search": {} }], // <-- ENABLE GOOGLE SEARCH
-                generationConfig: {
-                    responseMimeType: "application/json",
-                    responseSchema: jsonSchema
                 }
             };
 
-            let attempt = 0;
-            const maxAttempts = 5;
-            let delay = 1000;
-
-            while (attempt < maxAttempts) {
-                try {
-                    const response = await fetch(apiUrl, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(payload)
-                    });
-
-                    if (!response.ok) {
-                        const errorBody = await response.json();
-                        throw new Error(`API Error ${response.status}: ${errorBody.error?.message || response.statusText}`);
-                    }
-
-                    const result = await response.json();
-                    const text = result.candidates?.[0]?.content?.parts?.[0]?.text;
-                     
-                    if (text) {
-                        return text;
-                    } else {
-                        // Check for grounding metadata if text is missing (might contain valuable info)
-                        const metadata = result.candidates?.[0]?.groundingMetadata;
-                        console.log("Gemini response metadata:", metadata);
-                        throw new Error("No text returned from Gemini API, but check console for metadata.");
-                    }
-                } catch (error) {
-                    console.warn(`Gemini Search API call attempt ${attempt + 1} failed:`, error);
-                    attempt++;
-                    if (attempt >= maxAttempts) {
-                        throw error; // Rethrow after last attempt
-                    }
-                    await new Promise(resolve => setTimeout(resolve, delay));
-                    delay *= 2; // Exponential backoff
-                }
+            // Add search tool if provided
+            if (searchTool) {
+                payload.tools = [searchTool];
             }
-            throw new Error("Gemini Search API call failed after all attempts.");
+
+            // Add JSON schema if requested
+            if (useSchema && jsonSchema) {
+                payload.generationConfig = {
+                    responseMimeType: "application/json",
+                    responseSchema: jsonSchema
+                };
+            }
+
+            const response = await fetch(apiUrl, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+
+            if (!response.ok) {
+                const errorBody = await response.json();
+                const errorMsg = errorBody.error?.message || response.statusText;
+                console.error(`API Error ${response.status}:`, errorBody);
+                throw new Error(`${response.status}: ${errorMsg}`);
+            }
+
+            const result = await response.json();
+            const text = result.candidates?.[0]?.content?.parts?.[0]?.text;
+
+            if (text) {
+                // Log grounding metadata if available
+                const metadata = result.candidates?.[0]?.groundingMetadata;
+                if (metadata) {
+                    console.log("🔍 Grounding metadata:", metadata);
+                }
+                return text;
+            } else {
+                throw new Error("No text returned from Gemini API");
+            }
         }
 
 
@@ -6336,24 +8006,110 @@ Continue with import?`;
                     const state = AppStateManager.getState();
                     const formData = FormManager.collectFormData();
                     const extractions = ExtractionTracker.getExtractions();
-                    const submissionId = `sub_${Date.now()}`;
+
+                    // Generate persistent submission ID based on document name
+                    // Same document = Same ID = Update row instead of creating new one
+                    const documentKey = state.documentName.replace(/[^a-zA-Z0-9]/g, '_').toLowerCase();
+                    let submissionId = localStorage.getItem(`submissionId_${documentKey}`);
+
+                    if (!submissionId) {
+                        // First time for this document - create new ID
+                        submissionId = `sub_${documentKey}_${Date.now()}`;
+                        localStorage.setItem(`submissionId_${documentKey}`, submissionId);
+                    }
+
                     const timestamp = new Date().toISOString();
 
                     // --- Define Sheet Headers (Must match your sheet) ---
-                    // Example:
-                    const submissionHeaders = ["Submission ID", "Timestamp", "Document", "Citation", "DOI", "PMID", "Total N"];
+                    const submissionHeaders = [
+                        "Submission ID", "Timestamp", "Document",
+                        // Step 1: Study ID
+                        "Citation", "DOI", "PMID", "Journal", "Year", "Country", "Centers", "Funding", "Conflicts", "Registration",
+                        // Step 2: PICO-T
+                        "Population", "Intervention", "Comparator", "Outcomes", "Timing", "Study Type", "Inclusion Met",
+                        // Step 3: Baseline
+                        "Total N", "Surgical N", "Control N",
+                        "Age Mean", "Age SD", "Age Median", "Age IQR Lower", "Age IQR Upper",
+                        "Male N", "Female N",
+                        "Pre-stroke mRS", "NIHSS Mean", "GCS Mean",
+                        // Step 4: Imaging
+                        "Vascular Territory", "Infarct Volume", "Stroke Volume Cerebellum",
+                        "Edema Dynamics", "Peak Swelling Window",
+                        "Brainstem Involvement", "Supratentorial Involvement", "Non-Cerebellar Stroke",
+                        // Step 5-8: Dynamic Fields (stored as JSON)
+                        "Indications (JSON)", "Interventions (JSON)", "Study Arms (JSON)",
+                        "Mortality Data (JSON)", "mRS Data (JSON)",
+                        "Complications (JSON)", "Predictors (JSON)", "Predictors Summary"
+                    ];
                     const extractionHeaders = ["Submission ID", "Field Name", "Text", "Page", "Method", "X", "Y", "Width", "Height"];
 
-                    // 1. Prepare Submission Row
-                    // This is an example. You MUST adjust this to match your 'Submissions' sheet columns exactly.
+                    // Helper function to collect dynamic fields
+                    const collectDynamicFields = (prefix) => {
+                        const fields = [];
+                        Object.keys(formData).forEach(key => {
+                            if (key.startsWith(prefix)) {
+                                fields.push({ field: key, value: formData[key] });
+                            }
+                        });
+                        return fields.length > 0 ? JSON.stringify(fields) : '';
+                    };
+
+                    // 1. Prepare Submission Row with ALL form fields
                     const submissionRow = [
                         submissionId,
                         timestamp,
                         state.documentName,
+                        // Step 1: Study ID
                         formData.citation || '',
                         formData.doi || '',
                         formData.pmid || '',
-                        formData.totalN || ''
+                        formData.journal || '',
+                        formData.year || '',
+                        formData.country || '',
+                        formData.centers || '',
+                        formData.funding || '',
+                        formData.conflicts || '',
+                        formData.registration || '',
+                        // Step 2: PICO-T
+                        formData['eligibility-population'] || '',
+                        formData['eligibility-intervention'] || '',
+                        formData['eligibility-comparator'] || '',
+                        formData['eligibility-outcomes'] || '',
+                        formData['eligibility-timing'] || '',
+                        formData['eligibility-type'] || '',
+                        formData['inclusion-met'] || '',
+                        // Step 3: Baseline
+                        formData.totalN || '',
+                        formData.surgicalN || '',
+                        formData.controlN || '',
+                        formData.ageMean || '',
+                        formData.ageSD || '',
+                        formData.ageMedian || '',
+                        formData.ageIQR_lower || '',
+                        formData.ageIQR_upper || '',
+                        formData.maleN || '',
+                        formData.femaleN || '',
+                        formData.prestrokeMRS || '',
+                        formData.nihssMean || '',
+                        formData.gcsMean || '',
+                        // Step 4: Imaging
+                        formData.vascularTerritory || '',
+                        formData.infarctVolume || '',
+                        formData.strokeVolumeCerebellum || '',
+                        formData.edemaDynamics || '',
+                        formData.peakSwellingWindow || '',
+                        formData.brainstemInvolvement || '',
+                        formData.supratentorialInvolvement || '',
+                        formData.nonCerebellarStroke || '',
+                        // Step 5-8: Dynamic Fields (JSON arrays)
+                        collectDynamicFields('indication_'),
+                        collectDynamicFields('intervention_'),
+                        collectDynamicFields('arm_'),
+                        collectDynamicFields('mortality_'),
+                        collectDynamicFields('mrs_'),
+                        collectDynamicFields('comp_'),
+                        collectDynamicFields('pred_'),
+                        formData.predictorsPoorOutcomeSurgical || ''
                     ];
 
                     // 2. Prepare Extraction Rows
@@ -6369,16 +8125,52 @@ Continue with import?`;
                         ext.coordinates.height
                     ]);
 
-                    // 3. Append to 'Submissions' Sheet
-                    await gapi.client.sheets.spreadsheets.values.append({
+                    // 3. Check if this submission already exists (UPDATE or INSERT)
+                    StatusManager.show('Checking for existing submission...', 'info');
+
+                    // Search for existing row with this Submission ID
+                    const existingData = await gapi.client.sheets.spreadsheets.values.get({
                         spreadsheetId: CONFIG.GOOGLE_SHEET_ID,
-                        range: 'Submissions!A:A', // Assumes 'Submissions' tab
-                        valueInputOption: 'USER_ENTERED',
-                        resource: { values: [submissionRow] }
+                        range: 'Submissions!A:A' // Get all Submission IDs
                     });
 
-                    // 4. Append to 'Extractions' Sheet
+                    let existingRowIndex = -1;
+                    if (existingData.result.values) {
+                        existingRowIndex = existingData.result.values.findIndex((row, idx) =>
+                            idx > 0 && row[0] === submissionId // Skip header row (idx > 0)
+                        );
+                    }
+
+                    if (existingRowIndex >= 0) {
+                        // Found existing row - UPDATE it
+                        const actualRowNumber = existingRowIndex + 1; // +1 for header row
+                        StatusManager.show(`Updating existing submission (Row ${actualRowNumber})...`, 'info');
+
+                        await gapi.client.sheets.spreadsheets.values.update({
+                            spreadsheetId: CONFIG.GOOGLE_SHEET_ID,
+                            range: `Submissions!A${actualRowNumber}:AV${actualRowNumber}`, // 48 columns (A to AV)
+                            valueInputOption: 'USER_ENTERED',
+                            resource: { values: [submissionRow] }
+                        });
+
+                        StatusManager.show('✓ Updated existing submission!', 'success');
+                    } else {
+                        // Not found - INSERT new row
+                        StatusManager.show('Creating new submission...', 'info');
+
+                        await gapi.client.sheets.spreadsheets.values.append({
+                            spreadsheetId: CONFIG.GOOGLE_SHEET_ID,
+                            range: 'Submissions!A:A',
+                            valueInputOption: 'USER_ENTERED',
+                            resource: { values: [submissionRow] }
+                        });
+
+                        StatusManager.show('✓ Created new submission!', 'success');
+                    }
+
+                    // 4. Append to 'Extractions' Sheet (always append for trace log)
                     if (extractionRows.length > 0) {
+                        StatusManager.show(`Adding ${extractionRows.length} extraction trace records...`, 'info');
                          await gapi.client.sheets.spreadsheets.values.append({
                             spreadsheetId: CONFIG.GOOGLE_SHEET_ID,
                             range: 'Extractions!A:A', // Assumes 'Extractions' tab
@@ -6388,7 +8180,7 @@ Continue with import?`;
                     }
 
                     StatusManager.showLoading(false);
-                    StatusManager.show('✓ Successfully saved to Google Sheets!', 'success');
+                    StatusManager.show(`✓ Successfully saved! (ID: ${submissionId})`, 'success');
                 };
                  
                 // Check if we already have a token

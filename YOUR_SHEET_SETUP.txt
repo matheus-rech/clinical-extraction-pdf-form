@@ -1,0 +1,113 @@
+YOUR GOOGLE SHEETS SETUP - Quick Copy Template
+================================================
+
+STEP 1: Create Google Sheet
+----------------------------
+1. Go to: https://sheets.google.com/
+2. Click "+ Blank" to create new sheet
+3. Rename to: "Clinical Study Data"
+
+STEP 2: Create "Submissions" Tab
+---------------------------------
+1. Rename "Sheet1" to: Submissions
+2. In Row 1, copy-paste ALL 48 headers (separated by tabs):
+
+Submission ID	Timestamp	Document	Citation	DOI	PMID	Journal	Year	Country	Centers	Funding	Conflicts	Registration	Population	Intervention	Comparator	Outcomes	Timing	Study Type	Inclusion Met	Total N	Surgical N	Control N	Age Mean	Age SD	Age Median	Age IQR Lower	Age IQR Upper	Male N	Female N	Pre-stroke mRS	NIHSS Mean	GCS Mean	Vascular Territory	Infarct Volume	Stroke Volume Cerebellum	Edema Dynamics	Peak Swelling Window	Brainstem Involvement	Supratentorial Involvement	Non-Cerebellar Stroke	Indications (JSON)	Interventions (JSON)	Study Arms (JSON)	Mortality Data (JSON)	mRS Data (JSON)	Complications (JSON)	Predictors (JSON)	Predictors Summary
+
+3. Format Row 1:
+   - Bold (Ctrl+B)
+   - Background color: Blue (#4A90E2)
+   - Text color: White
+   - View → Freeze → 1 row
+
+STRUCTURE BREAKDOWN (48 columns total):
+- Metadata: 3 columns (Submission ID, Timestamp, Document)
+- Step 1 (Study ID): 10 columns (Citation → Registration)
+- Step 2 (PICO-T): 7 columns (Population → Inclusion Met)
+- Step 3 (Baseline): 13 columns (Total N → GCS Mean)
+- Step 4 (Imaging): 8 columns (Vascular Territory → Non-Cerebellar Stroke)
+- Steps 5-8 (Dynamic): 7 columns (JSON arrays for repeating fields)
+
+STEP 3: Create "Extractions" Tab
+---------------------------------
+1. Click "+" at bottom to add new sheet
+2. Rename to: Extractions
+3. In Row 1, copy-paste these headers (separated by tabs):
+
+Submission ID	Field Name	Text	Page	Method	X	Y	Width	Height
+
+4. Format Row 1:
+   - Bold (Ctrl+B)
+   - Background color: Green (#50C878)
+   - Text color: White
+   - View → Freeze → 1 row
+
+STEP 4: Get Your Sheet ID
+--------------------------
+Look at your browser URL. It looks like this:
+
+https://docs.google.com/spreadsheets/d/YOUR_SHEET_ID_HERE/edit
+                                      ^^^^^^^^^^^^^^^^^^^^
+                                      Copy this part!
+
+Example: If your URL is:
+https://docs.google.com/spreadsheets/d/1BxiMVs0XRA5nFMdKvBQ_abc123/edit
+
+Your Sheet ID is: 1BxiMVs0XRA5nFMdKvBQ_abc123
+
+Copy everything between "/d/" and "/edit"
+
+STEP 5: Configure Your App
+---------------------------
+Your OAuth Client ID (already have this):
+84349733634-cmkfsru9aul9f7bndeq2s78rifr42gdh.apps.googleusercontent.com
+
+Your Sheet ID (get this from Step 4):
+[PASTE YOUR SHEET ID HERE]
+
+STEP 6: Enter in App Settings
+------------------------------
+1. Open: http://localhost:8000/Clinical_Study_Extraction.html
+2. Click the ⚙️ Settings button (top right)
+3. Scroll to "Google Sheets Integration" section
+4. Paste OAuth Client ID: 84349733634-cmkfsru9aul9f7bndeq2s78rifr42gdh.apps.googleusercontent.com
+5. Paste Google Sheet ID: [YOUR_SHEET_ID]
+6. Click "Save Settings"
+7. You should see green checkmarks ✓ Configured
+
+STEP 7: Test It!
+----------------
+1. Load a PDF in the app
+2. Click a field and highlight some text to extract
+3. Click "💾 Save to Google Sheets" button (bottom of form panel)
+4. First time: Authorize the app
+   - Click "Advanced"
+   - Click "Go to Clinical Study Extraction (unsafe)"
+   - Click "Allow"
+5. Check your Google Sheet - data should appear!
+
+TROUBLESHOOTING
+---------------
+If you see "Range 'Submissions!A:A' not found":
+→ Make sure tab name is exactly "Submissions" (capital S, no spaces)
+
+If you see "403 Permission denied":
+→ Go to Google Cloud Console → OAuth consent screen
+→ Add your email as Test User
+
+If authorization popup is blocked:
+→ Allow popups for localhost in browser settings
+
+If you see "redirect_uri_mismatch":
+→ Go to Google Cloud Console → Credentials
+→ Edit your OAuth Client ID
+→ Add "http://localhost:8000" to Authorized JavaScript origins
+→ Save and wait 5 minutes
+
+NEXT STEPS
+----------
+After successful test:
+✅ Share your sheet with collaborators
+✅ Create pivot tables for analysis
+✅ Set up automatic backups
+✅ Add conditional formatting for visual indicators

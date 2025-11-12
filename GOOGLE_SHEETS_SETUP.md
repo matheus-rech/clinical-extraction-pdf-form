@@ -117,11 +117,19 @@ Client ID: 123456789-abcdefghijk.apps.googleusercontent.com
 4. Press Enter
 
 **Add Column Headers (Row 1):**
-Type these exact headers in row 1:
+Copy-paste ALL 48 headers (tab-separated) into row 1:
 
-| A | B | C | D | E | F | G |
-|---|---|---|---|---|---|---|
-| Submission ID | Timestamp | Document | Citation | DOI | PMID | Total N |
+```
+Submission ID	Timestamp	Document	Citation	DOI	PMID	Journal	Year	Country	Centers	Funding	Conflicts	Registration	Population	Intervention	Comparator	Outcomes	Timing	Study Type	Inclusion Met	Total N	Surgical N	Control N	Age Mean	Age SD	Age Median	Age IQR Lower	Age IQR Upper	Male N	Female N	Pre-stroke mRS	NIHSS Mean	GCS Mean	Vascular Territory	Infarct Volume	Stroke Volume Cerebellum	Edema Dynamics	Peak Swelling Window	Brainstem Involvement	Supratentorial Involvement	Non-Cerebellar Stroke	Indications (JSON)	Interventions (JSON)	Study Arms (JSON)	Mortality Data (JSON)	mRS Data (JSON)	Complications (JSON)	Predictors (JSON)	Predictors Summary
+```
+
+**Structure (48 columns total):**
+- **Columns A-C**: Metadata (Submission ID, Timestamp, Document)
+- **Columns D-M**: Step 1 - Study ID (10 fields)
+- **Columns N-T**: Step 2 - PICO-T (7 fields)
+- **Columns U-AG**: Step 3 - Baseline (13 fields)
+- **Columns AH-AO**: Step 4 - Imaging (8 fields)
+- **Columns AP-AV**: Steps 5-8 - Dynamic fields stored as JSON (7 fields)
 
 **Format Headers:**
 - Select row 1
@@ -273,18 +281,58 @@ You'll see a Google OAuth popup:
 
 ## 📊 Understanding the Data Structure
 
-### Submissions Tab (One row per study)
+### Submissions Tab (One row per study, 48 columns)
+
+**Metadata (3 columns):**
 ```
 Submission ID: Unique ID (sub_1234567890)
 Timestamp: ISO date (2025-01-17T10:30:00.000Z)
 Document: PDF filename
-Citation: Study citation text
-DOI: Digital Object Identifier
-PMID: PubMed ID
-Total N: Sample size
 ```
 
-### Extractions Tab (Multiple rows per study)
+**Step 1: Study ID (10 columns):**
+```
+Citation, DOI, PMID, Journal, Year, Country, Centers, Funding, Conflicts, Registration
+```
+
+**Step 2: PICO-T (7 columns):**
+```
+Population, Intervention, Comparator, Outcomes, Timing, Study Type, Inclusion Met
+```
+
+**Step 3: Baseline (13 columns):**
+```
+Total N, Surgical N, Control N
+Age Mean, Age SD, Age Median, Age IQR Lower, Age IQR Upper
+Male N, Female N
+Pre-stroke mRS, NIHSS Mean, GCS Mean
+```
+
+**Step 4: Imaging (8 columns):**
+```
+Vascular Territory, Infarct Volume, Stroke Volume Cerebellum
+Edema Dynamics, Peak Swelling Window
+Brainstem Involvement, Supratentorial Involvement, Non-Cerebellar Stroke
+```
+
+**Steps 5-8: Dynamic Fields (7 columns, JSON arrays):**
+```
+Indications (JSON): e.g., [{"field":"indication_sign_1","value":"Hydrocephalus"}]
+Interventions (JSON): e.g., [{"field":"intervention_type_1","value":"SDC_EVD"}]
+Study Arms (JSON): e.g., [{"field":"arm_n_1","value":"75"}]
+Mortality Data (JSON): e.g., [{"field":"mortality_deaths_1","value":"15"}]
+mRS Data (JSON): e.g., [{"field":"mrs_0_1","value":"10"}]
+Complications (JSON): e.g., [{"field":"comp_desc_1","value":"Infection"}]
+Predictors (JSON): e.g., [{"field":"pred_var_1","value":"Age"}]
+Predictors Summary: Free-text summary of key predictors
+```
+
+**Why JSON for dynamic fields?**
+- Handles variable numbers of entries (1 to N indications, interventions, etc.)
+- Preserves all data without needing unlimited columns
+- Can be parsed later for analysis (e.g., in R/Python/Google Sheets formulas)
+
+### Extractions Tab (Multiple rows per study, 9 columns)
 ```
 Submission ID: Links to Submissions tab
 Field Name: Which form field (e.g., "Population")
@@ -293,6 +341,8 @@ Page: PDF page number
 Method: text/region/image/ai-table/annotation
 X, Y, Width, Height: Coordinates on PDF page
 ```
+
+This tab provides a detailed trace log of every extraction action with coordinates for reproducibility.
 
 ---
 

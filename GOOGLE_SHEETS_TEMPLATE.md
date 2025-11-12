@@ -8,15 +8,43 @@ Use this to quickly create your Google Sheet with the correct structure.
 
 ## Tab 1: Submissions
 
-**Column Headers (Row 1):**
+**Complete Column Headers (48 columns organized by form steps):**
 
+### Copy-Paste Ready (Tab-separated):
 ```
-Submission ID | Timestamp | Document | Citation | DOI | PMID | Total N
+Submission ID	Timestamp	Document	Citation	DOI	PMID	Journal	Year	Country	Centers	Funding	Conflicts	Registration	Population	Intervention	Comparator	Outcomes	Timing	Study Type	Inclusion Met	Total N	Surgical N	Control N	Age Mean	Age SD	Age Median	Age IQR Lower	Age IQR Upper	Male N	Female N	Pre-stroke mRS	NIHSS Mean	GCS Mean	Vascular Territory	Infarct Volume	Stroke Volume Cerebellum	Edema Dynamics	Peak Swelling Window	Brainstem Involvement	Supratentorial Involvement	Non-Cerebellar Stroke	Indications (JSON)	Interventions (JSON)	Study Arms (JSON)	Mortality Data (JSON)	mRS Data (JSON)	Complications (JSON)	Predictors (JSON)	Predictors Summary
 ```
 
-**Example Data (Row 2):**
+### Organized by Form Steps:
+
+**Metadata (3 columns):**
+- Submission ID, Timestamp, Document
+
+**Step 1: Study ID (10 columns):**
+- Citation, DOI, PMID, Journal, Year, Country, Centers, Funding, Conflicts, Registration
+
+**Step 2: PICO-T (7 columns):**
+- Population, Intervention, Comparator, Outcomes, Timing, Study Type, Inclusion Met
+
+**Step 3: Baseline (13 columns):**
+- Total N, Surgical N, Control N
+- Age Mean, Age SD, Age Median, Age IQR Lower, Age IQR Upper
+- Male N, Female N
+- Pre-stroke mRS, NIHSS Mean, GCS Mean
+
+**Step 4: Imaging (8 columns):**
+- Vascular Territory, Infarct Volume, Stroke Volume Cerebellum
+- Edema Dynamics, Peak Swelling Window
+- Brainstem Involvement, Supratentorial Involvement, Non-Cerebellar Stroke
+
+**Steps 5-8: Dynamic Fields (7 columns, stored as JSON arrays):**
+- Indications (JSON), Interventions (JSON), Study Arms (JSON)
+- Mortality Data (JSON), mRS Data (JSON)
+- Complications (JSON), Predictors (JSON), Predictors Summary
+
+**Example Data Row:**
 ```
-sub_1705483200000 | 2025-01-17T10:30:00.000Z | study_2024.pdf | Smith et al. 2024 | 10.1234/example | 12345678 | 150
+sub_1705483200000 | 2025-01-17T10:30:00.000Z | study_2024.pdf | Smith et al. 2024 | 10.1234/example | 12345678 | Stroke | 2024 | USA | Multi | NIH Grant | None | NCT12345678 | Cerebellar stroke patients | Suboccipital decompressive craniectomy | Medical management | Mortality, mRS at 90 days | 90 days | RCT | true | 150 | 75 | 75 | 65.5 | 12.3 | 64 | 58 | 72 | 90 | 60 | 0 | 14.2 | 8.5 | PICA | 45.2 | 38.5 mL | Progressive | 24-48 hours | true | false | false | [{"field":"indication_sign_1","value":"Hydrocephalus"}] | [{"field":"intervention_type_1","value":"SDC_EVD"}] | [{"field":"arm_n_1","value":"75"}] | [{"field":"mortality_deaths_1","value":"15"}] | [{"field":"mrs_0_1","value":"10"}] | [{"field":"comp_desc_1","value":"Infection"}] | [{"field":"pred_var_1","value":"Age"}] | Age and infarct volume independently predict poor outcome
 ```
 
 **Google Sheets Formula (Row 2 onwards):**
@@ -50,11 +78,13 @@ sub_1705483200000 | Population | Patients with acute stroke | 3 | text | 120.5 |
 | B | Text | `Population` | Form field name |
 | C | Text | `Patients with...` | Extracted text |
 | D | Number | `3` | PDF page number |
-| E | Text | `text` | Extraction method |
+| E | Text | `text` | Extraction method (text/region/image/ai-table/annotation) |
 | F | Number | `120.5` | X coordinate (pixels) |
 | G | Number | `340.2` | Y coordinate (pixels) |
 | H | Number | `250.0` | Width (pixels) |
 | I | Number | `18.5` | Height (pixels) |
+
+**Note:** The Extractions tab captures the complete trace log of every field extraction with coordinates, allowing you to reproduce and verify the data collection process.
 
 ---
 
@@ -263,12 +293,12 @@ function convertRangeToCsv_(range) {
 
 ## 🎯 Ready-to-Copy Headers
 
-### Submissions (copy this row):
+### Submissions (copy this row - 48 columns):
 ```
-Submission ID	Timestamp	Document	Citation	DOI	PMID	Total N
+Submission ID	Timestamp	Document	Citation	DOI	PMID	Journal	Year	Country	Centers	Funding	Conflicts	Registration	Population	Intervention	Comparator	Outcomes	Timing	Study Type	Inclusion Met	Total N	Surgical N	Control N	Age Mean	Age SD	Age Median	Age IQR Lower	Age IQR Upper	Male N	Female N	Pre-stroke mRS	NIHSS Mean	GCS Mean	Vascular Territory	Infarct Volume	Stroke Volume Cerebellum	Edema Dynamics	Peak Swelling Window	Brainstem Involvement	Supratentorial Involvement	Non-Cerebellar Stroke	Indications (JSON)	Interventions (JSON)	Study Arms (JSON)	Mortality Data (JSON)	mRS Data (JSON)	Complications (JSON)	Predictors (JSON)	Predictors Summary
 ```
 
-### Extractions (copy this row):
+### Extractions (copy this row - 9 columns):
 ```
 Submission ID	Field Name	Text	Page	Method	X	Y	Width	Height
 ```
@@ -278,6 +308,44 @@ Submission ID	Field Name	Text	Page	Method	X	Y	Width	Height
 2. Paste into Row 1 of your sheet
 3. Format as bold with colored background
 4. Freeze the row
+
+---
+
+## 📦 Working with JSON Fields
+
+The last 7 columns of the Submissions sheet contain JSON arrays for dynamic fields (indications, interventions, etc.). Here's how to parse them:
+
+### Google Sheets Formula to Extract JSON Values:
+
+**Extract first indication:**
+```excel
+=REGEXEXTRACT(AP2, """value"":""([^""]+)""")
+```
+
+**Count number of entries:**
+```excel
+=LEN(AP2)-LEN(SUBSTITUTE(AP2,"field",""))/5
+```
+
+### Python/R Parsing:
+
+**Python:**
+```python
+import json
+import pandas as pd
+
+df = pd.read_csv('submissions.csv')
+df['indications_parsed'] = df['Indications (JSON)'].apply(json.loads)
+```
+
+**R:**
+```r
+library(jsonlite)
+library(tidyverse)
+
+df <- read_csv('submissions.csv')
+df$indications_parsed <- map(df$`Indications (JSON)`, fromJSON)
+```
 
 ---
 

@@ -1,0 +1,84 @@
+================================================================
+GOOGLE SHEETS SETUP - COPY-PASTE HEADERS
+================================================================
+
+Your Sheet URL: https://docs.google.com/spreadsheets/d/1P7EQq4hTx8-5YTXQPEcIYLLKq9tsxjNagA8qWVv6JVw/edit
+
+================================================================
+SUBMISSIONS TAB (48 COLUMNS)
+================================================================
+
+📋 COPY THIS ENTIRE LINE (tab-separated headers):
+
+Submission ID	Timestamp	Document	Citation	DOI	PMID	Journal	Year	Country	Centers	Funding	Conflicts	Registration	Population	Intervention	Comparator	Outcomes	Timing	Study Type	Inclusion Met	Total N	Surgical N	Control N	Age Mean	Age SD	Age Median	Age IQR Lower	Age IQR Upper	Male N	Female N	Pre-stroke mRS	NIHSS Mean	GCS Mean	Vascular Territory	Infarct Volume	Stroke Volume Cerebellum	Edema Dynamics	Peak Swelling Window	Brainstem Involvement	Supratentorial Involvement	Non-Cerebellar Stroke	Indications (JSON)	Interventions (JSON)	Study Arms (JSON)	Mortality Data (JSON)	mRS Data (JSON)	Complications (JSON)	Predictors (JSON)	Predictors Summary
+
+STEPS TO APPLY:
+1. Open your Google Sheet (URL above)
+2. Click on cell A1 in Sheet1
+3. Copy the line above (Ctrl/Cmd+C)
+4. Paste into A1 (Ctrl/Cmd+V) - headers will auto-fill across columns
+5. Select entire Row 1 (click on row number "1")
+6. Make Bold: Ctrl/Cmd+B
+7. Optional: Add blue background color
+8. Freeze row: View menu → Freeze → 1 row
+9. Rename Sheet1 to "Submissions" (right-click tab → Rename)
+
+================================================================
+EXTRACTIONS TAB (9 COLUMNS)
+================================================================
+
+📋 COPY THIS ENTIRE LINE (tab-separated headers):
+
+Submission ID	Field Name	Text	Page	Method	X	Y	Width	Height
+
+STEPS TO APPLY:
+1. Click "+" button at bottom to add new sheet (or use existing Sheet2)
+2. Click on cell A1
+3. Copy the line above
+4. Paste into A1
+5. Select entire Row 1
+6. Make Bold: Ctrl/Cmd+B
+7. Optional: Add green background color
+8. Freeze row: View menu → Freeze → 1 row
+9. Rename to "Extractions" (right-click tab → Rename)
+
+================================================================
+VERIFICATION CHECKLIST
+================================================================
+
+✓ Submissions tab has 48 columns (A through AV)
+✓ Extractions tab has 9 columns (A through I)
+✓ Both Row 1 headers are bold
+✓ Both Row 1 are frozen
+✓ Tab names are exactly "Submissions" and "Extractions" (case-sensitive)
+
+================================================================
+QUICK STRUCTURE REFERENCE
+================================================================
+
+Submissions (48 columns):
+  • Metadata: Columns A-C (3)
+  • Study ID: Columns D-M (10)
+  • PICO-T: Columns N-T (7)
+  • Baseline: Columns U-AG (13)
+  • Imaging: Columns AH-AO (8)
+  • Dynamic Fields: Columns AP-AV (7 JSON arrays)
+
+Extractions (9 columns):
+  • All columns: A-I (trace log with coordinates)
+
+================================================================
+READY TO USE!
+================================================================
+
+Once set up, your app will automatically export all form data to:
+• Submissions tab: One row per study with all fields
+• Extractions tab: Multiple rows per study (detailed trace log)
+
+The app is already configured with your credentials:
+• OAuth Client ID: 84349733634-cmkfsru9aul9f7bndeq2s78rifr42gdh.apps.googleusercontent.com
+• Sheet ID: 1P7EQq4hTx8-5YTXQPEcIYLLKq9tsxjNagA8qWVv6JVw
+
+Just fill the form and click "💾 Save to Google Sheets"!
+
+================================================================
