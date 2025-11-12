@@ -1583,11 +1583,12 @@
             // STEP 1: ADD YOUR API KEYS HERE
             // ============================================================================
             
-            // GEMINI API KEY - Required for AI features
-            // Get from: https://makersuite.google.com/app/apikey
+            // AI API KEY - Required for AI features (works with all providers)
+            // Supported providers: Gemini, Anthropic Claude, OpenAI GPT
+            // Configure provider in Settings (⚙️ button)
             // Features: PICO-T generation, summaries, validation, metadata search
-            // Example: "AIzaSyD7qwertyuiop_1234567890abcdefghijk"
-            GEMINI_API_KEY: "PASTE_YOUR_GEMINI_API_KEY_HERE",
+            // Example: "AIzaSyD7..." (Gemini), "sk-ant-..." (Anthropic), "sk-..." (OpenAI)
+            AI_API_KEY: "PASTE_YOUR_AI_API_KEY_HERE",
             
             // GOOGLE CLOUD API KEY - Currently unused (reserved for future features)
             // Get from: https://console.cloud.google.com
@@ -2622,11 +2623,11 @@
                 try {
                     const arrayBuffer = await file.arrayBuffer();
                     
-                    // Validate Gemini API key for AI features (non-blocking)
-                    const geminiApiKey = CONFIG.GEMINI_API_KEY; 
-                    if (!geminiApiKey || geminiApiKey === "PASTE_YOUR_GEMINI_API_KEY_HERE") {
-                        console.warn("Gemini API Key not configured. AI features will be disabled.");
-                        StatusManager.show("Note: AI features require Gemini API key configuration", "warning", 5000);
+                    // Validate AI API key for AI features (non-blocking)
+                    const aiApiKey = CONFIG.AI_API_KEY;
+                    if (!aiApiKey || aiApiKey === "PASTE_YOUR_AI_API_KEY_HERE") {
+                        console.warn("AI API Key not configured. AI features will be disabled.");
+                        StatusManager.show("Note: AI features require API key configuration (set in ⚙️ Settings)", "warning", 5000);
                     }
                     
                     // Load PDF with PDF.js
@@ -3416,9 +3417,9 @@
          * @returns {Promise<string>} - The text content from the API response.
          */
         async function callGeminiWithSearch(systemPrompt, userPrompt, jsonSchema) {
-            const apiKey = CONFIG.GEMINI_API_KEY; // API key is now from CONFIG
+            const apiKey = CONFIG.AI_API_KEY; // API key is now from CONFIG
             if (!apiKey) {
-                throw new Error("Gemini API Key is missing in CONFIG.GEMINI_API_KEY");
+                throw new Error("AI API Key is missing in CONFIG.AI_API_KEY");
             }
             const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
              
@@ -4199,9 +4200,9 @@
              */
             async callAI(systemPrompt, userPrompt, schema = null) {
                 const provider = AppState.aiProvider || 'gemini';
-                const apiKey = CONFIG.GEMINI_API_KEY; // Used for all providers
+                const apiKey = CONFIG.AI_API_KEY; // Used for all providers
                 
-                if (!apiKey || apiKey === "PASTE_YOUR_GEMINI_API_KEY_HERE") {
+                if (!apiKey || apiKey === "PASTE_YOUR_AI_API_KEY_HERE") {
                     throw new Error(`Please configure your ${this[provider].name} API key in Settings`);
                 }
                 
@@ -4821,7 +4822,7 @@ Continue with import?`;
                         
                         // Update CONFIG object
                         if (settings.aiProvider) AppState.aiProvider = settings.aiProvider;
-                        if (settings.aiApiKey) CONFIG.GEMINI_API_KEY = settings.aiApiKey;
+                        if (settings.aiApiKey) CONFIG.AI_API_KEY = settings.aiApiKey;
                         if (settings.googleClientId) CONFIG.GOOGLE_CLIENT_ID = settings.googleClientId;
                         if (settings.googleSheetId) CONFIG.GOOGLE_SHEET_ID = settings.googleSheetId;
                         
@@ -4839,7 +4840,7 @@ Continue with import?`;
              * Update status badge indicators
              */
             updateStatusIndicators: function() {
-                const aiConfigured = CONFIG.GEMINI_API_KEY && CONFIG.GEMINI_API_KEY !== "PASTE_YOUR_GEMINI_API_KEY_HERE";
+                const aiConfigured = CONFIG.AI_API_KEY && CONFIG.AI_API_KEY !== "PASTE_YOUR_AI_API_KEY_HERE";
                 const sheetsConfigured = CONFIG.GOOGLE_CLIENT_ID && CONFIG.GOOGLE_CLIENT_ID !== "PASTE_YOUR_CLIENT_ID_HERE.apps.googleusercontent.com" &&
                                         CONFIG.GOOGLE_SHEET_ID && CONFIG.GOOGLE_SHEET_ID !== "PASTE_YOUR_SHEET_ID_HERE";
                 
@@ -4867,14 +4868,14 @@ Continue with import?`;
             
             // Load current values (show masked if exists)
             const aiProvider = AppState.aiProvider || 'gemini';
-            const aiKey = CONFIG.GEMINI_API_KEY;
+            const aiKey = CONFIG.AI_API_KEY;
             const clientId = CONFIG.GOOGLE_CLIENT_ID;
             const sheetId = CONFIG.GOOGLE_SHEET_ID;
             
             document.getElementById('ai-provider').value = aiProvider;
             
             // Show masked values for security
-            if (aiKey && aiKey !== "PASTE_YOUR_GEMINI_API_KEY_HERE") {
+            if (aiKey && aiKey !== "PASTE_YOUR_AI_API_KEY_HERE") {
                 document.getElementById('ai-api-key').value = aiKey.substring(0, 8) + '...' + aiKey.slice(-4);
                 document.getElementById('ai-api-key').dataset.fullKey = aiKey;
             }
@@ -5032,7 +5033,7 @@ Continue with import?`;
                 
                 // Update CONFIG
                 AppState.aiProvider = provider;
-                CONFIG.GEMINI_API_KEY = apiKey; // Used for all providers initially
+                CONFIG.AI_API_KEY = apiKey; // Used for all providers initially
                 CONFIG.GOOGLE_CLIENT_ID = clientId;
                 CONFIG.GOOGLE_SHEET_ID = sheetId;
                 
@@ -5065,7 +5066,7 @@ Continue with import?`;
             document.getElementById('ai-provider').value = 'gemini';
             
             // Reset CONFIG
-            CONFIG.GEMINI_API_KEY = "PASTE_YOUR_GEMINI_API_KEY_HERE";
+            CONFIG.AI_API_KEY = "PASTE_YOUR_AI_API_KEY_HERE";
             CONFIG.GOOGLE_CLIENT_ID = "PASTE_YOUR_CLIENT_ID_HERE.apps.googleusercontent.com";
             CONFIG.GOOGLE_SHEET_ID = "PASTE_YOUR_SHEET_ID_HERE";
             AppState.aiProvider = 'gemini';
