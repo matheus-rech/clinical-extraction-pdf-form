@@ -1380,6 +1380,10 @@
                 </select>
                 <button id="fit-width">Fit Width</button>
                 <button id="region-mode-btn" class="selection-mode-toggle" onclick="toggleRegionMode()" title="Toggle Region Selection Mode">🔲 Region</button>
+                <label style="display: inline-flex; align-items: center; margin-left: 5px; font-size: 12px; cursor: pointer;" title="Use AI Vision to parse tables from regions">
+                    <input type="checkbox" id="ai-table-mode" style="margin-right: 4px; width: auto;">
+                    <span>🤖 AI Table</span>
+                </label>
                 <button id="image-mode-btn" class="selection-mode-toggle" onclick="toggleImageMode()" title="Toggle Image Capture Mode">📷 Image</button>
                 <button id="import-annotations-btn" onclick="importPDFAnnotations()" title="Import PDF Annotations">📝 Annotations</button>
                 <button id="settings-btn" onclick="openSettings()" title="Configure API Keys">⚙️ Settings</button>
@@ -1560,6 +1564,48 @@
                 <button onclick="closeSettings()" style="background: var(--gray-500);">Cancel</button>
                 <button onclick="clearSettings()" style="background: var(--error-red);">Clear All</button>
                 <button onclick="saveSettings()" style="background: var(--success-green);">Save Settings</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Table Parser Result Modal -->
+    <div id="table-parser-modal" class="settings-modal" role="dialog" aria-labelledby="table-parser-title">
+        <div class="settings-content" style="max-width: 900px;">
+            <h2 id="table-parser-title">🤖 AI Table Parser Results</h2>
+
+            <div class="settings-group">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                    <div>
+                        <strong>Provider:</strong> <span id="table-provider-name">-</span> |
+                        <strong>Rows:</strong> <span id="table-row-count">0</span> |
+                        <strong>Columns:</strong> <span id="table-col-count">0</span>
+                    </div>
+                    <div>
+                        <button onclick="exportTableAsJSON()" style="padding: 6px 12px; margin-right: 5px;" title="Export as JSON">📄 JSON</button>
+                        <button onclick="exportTableAsCSV()" style="padding: 6px 12px;" title="Export as CSV">📊 CSV</button>
+                    </div>
+                </div>
+
+                <div id="table-preview-container" style="max-height: 400px; overflow: auto; border: 1px solid var(--gray-300); border-radius: 4px; padding: 10px; background: white;">
+                    <table id="table-preview" style="width: 100%; border-collapse: collapse; font-size: 13px;">
+                        <!-- Table content will be dynamically inserted here -->
+                    </table>
+                </div>
+
+                <div id="table-json-container" style="margin-top: 15px; display: none;">
+                    <label style="font-weight: 600;">Raw JSON:</label>
+                    <pre id="table-json" style="background: #f5f5f5; padding: 10px; border-radius: 4px; max-height: 200px; overflow: auto; font-size: 12px;"></pre>
+                </div>
+
+                <label style="margin-top: 10px; display: inline-flex; align-items: center; cursor: pointer;">
+                    <input type="checkbox" id="show-raw-json" onchange="toggleRawJSON()" style="margin-right: 5px; width: auto;">
+                    <span>Show raw JSON</span>
+                </label>
+            </div>
+
+            <div class="settings-actions">
+                <button onclick="closeTableParser()" style="background: var(--gray-500);">Close</button>
+                <button onclick="copyTableToClipboard()" style="background: var(--primary-blue);">📋 Copy to Clipboard</button>
             </div>
         </div>
     </div>
@@ -1962,8 +2008,24 @@
                 }
                 
                 const region = { x: left, y: top, width, height };
-                
-                // Extract text from region
+
+                // Check if AI Table Mode is enabled
+                const aiTableMode = document.getElementById('ai-table-mode')?.checked;
+
+                if (aiTableMode) {
+                    // Parse table with AI Vision
+                    try {
+                        await TableParserManager.parseTableFromRegion(region, state.currentPage);
+                    } catch (error) {
+                        // Error already handled in TableParserManager
+                    } finally {
+                        this.removeCurrentBox();
+                        this.startPoint = null;
+                    }
+                    return;
+                }
+
+                // Extract text from region (normal mode)
                 StatusManager.showLoading(true);
                 try {
                     const extractedText = await this.extractTextFromRegion(region, state.currentPage);
@@ -2422,6 +2484,383 @@
             } else {
                 ImageExtractionManager.enable();
                 StatusManager.show('📷 Image mode: Draw a box to capture a figure/image', 'info', 5000);
+            }
+        };
+
+        // ============================================================================
+        // TABLE PARSER MANAGER - Feature 5: AI Vision Table Parsing
+        // ============================================================================
+
+        const TableParserManager = {
+            currentTableData: null,
+
+            /**
+             * Parse table from region using AI Vision
+             * @param {Object} region - The region coordinates {x, y, width, height}
+             * @param {number} pageNum - The PDF page number
+             */
+            async parseTableFromRegion(region, pageNum) {
+                try {
+                    StatusManager.showLoading(true);
+                    StatusManager.show('🤖 Capturing table image...', 'info');
+
+                    // Capture region as image using ImageExtractionManager's method
+                    const canvas = await ImageExtractionManager.captureRegion(region);
+                    const base64Image = canvas.toDataURL('image/png', 1.0);
+
+                    // Remove data URL prefix to get pure base64
+                    const base64Data = base64Image.split(',')[1];
+
+                    StatusManager.show('🔍 Analyzing table with AI Vision...', 'info');
+
+                    // Get current AI provider
+                    const provider = AppStateManager.getState().aiProvider || 'gemini';
+
+                    // Parse table with vision API
+                    const tableData = await this.callVisionAPI(provider, base64Data);
+
+                    // Store result
+                    this.currentTableData = {
+                        provider: provider,
+                        data: tableData,
+                        region: region,
+                        page: pageNum,
+                        timestamp: new Date().toISOString()
+                    };
+
+                    // Create extraction record
+                    const extraction = ExtractionTracker.addExtraction({
+                        fieldName: 'AI Table',
+                        text: `[Table: ${tableData.rows?.length || 0} rows × ${tableData.headers?.length || 0} cols]`,
+                        page: pageNum,
+                        coordinates: region,
+                        method: 'ai-table',
+                        imageData: base64Image,
+                        tableData: tableData,
+                        documentName: AppStateManager.getState().documentName
+                    });
+
+                    if (extraction) {
+                        addExtractionMarker(extraction);
+                    }
+
+                    // Display results in modal
+                    this.displayTableResults(tableData, provider);
+
+                    StatusManager.show(`✓ Table parsed: ${tableData.rows?.length || 0} rows`, 'success');
+
+                } catch (error) {
+                    console.error('Table parsing error:', error);
+                    StatusManager.show(`❌ Table parsing failed: ${error.message}`, 'error');
+                    throw error;
+                } finally {
+                    StatusManager.showLoading(false);
+                }
+            },
+
+            /**
+             * Call Vision API to parse table
+             * @param {string} provider - AI provider (gemini, anthropic, openai)
+             * @param {string} base64Image - Base64 encoded image
+             */
+            async callVisionAPI(provider, base64Image) {
+                const systemPrompt = `You are a table extraction expert. Analyze the provided image and extract the table data into structured JSON format.
+
+**Instructions:**
+1. Identify all table headers/column names
+2. Extract all data rows
+3. Preserve cell values exactly as they appear
+4. Handle merged cells by repeating values
+5. Return clean, structured JSON
+
+**Output Format:**
+{
+  "headers": ["Column1", "Column2", "Column3", ...],
+  "rows": [
+    ["cell1", "cell2", "cell3", ...],
+    ["cell1", "cell2", "cell3", ...],
+    ...
+  ],
+  "metadata": {
+    "hasHeaders": true/false,
+    "rowCount": number,
+    "columnCount": number,
+    "notes": "any important observations"
+  }
+}`;
+
+                const userPrompt = "Extract the table from this image into structured JSON format as specified.";
+
+                if (provider === 'gemini') {
+                    return await this.callGeminiVision(base64Image, systemPrompt, userPrompt);
+                } else if (provider === 'anthropic') {
+                    return await this.callClaudeVision(base64Image, systemPrompt, userPrompt);
+                } else if (provider === 'openai') {
+                    return await this.callGPT4Vision(base64Image, systemPrompt, userPrompt);
+                } else {
+                    throw new Error(`Unsupported AI provider: ${provider}`);
+                }
+            },
+
+            /**
+             * Call Gemini Vision API
+             */
+            async callGeminiVision(base64Image, systemPrompt, userPrompt) {
+                const apiKey = CONFIG.AI_API_KEY;
+                if (!apiKey || apiKey === "PASTE_YOUR_AI_API_KEY_HERE") {
+                    throw new Error("Please configure your Gemini API key in Settings");
+                }
+
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=${apiKey}`;
+
+                const payload = {
+                    contents: [{
+                        parts: [
+                            { text: userPrompt },
+                            {
+                                inline_data: {
+                                    mime_type: "image/png",
+                                    data: base64Image
+                                }
+                            }
+                        ]
+                    }],
+                    systemInstruction: {
+                        parts: [{ text: systemPrompt }]
+                    },
+                    generationConfig: {
+                        temperature: 0.1,
+                        topK: 40,
+                        topP: 0.95,
+                        maxOutputTokens: 8192,
+                        responseMimeType: "application/json"
+                    }
+                };
+
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    throw new Error(`Gemini API error (${response.status}): ${errorText}`);
+                }
+
+                const data = await response.json();
+                const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
+
+                if (!text) {
+                    throw new Error('No response from Gemini Vision API');
+                }
+
+                // Parse JSON response
+                try {
+                    return JSON.parse(text);
+                } catch (e) {
+                    throw new Error(`Failed to parse Gemini response as JSON: ${e.message}`);
+                }
+            },
+
+            /**
+             * Call Claude Vision API
+             */
+            async callClaudeVision(base64Image, systemPrompt, userPrompt) {
+                const apiKey = CONFIG.AI_API_KEY;
+                if (!apiKey || apiKey === "PASTE_YOUR_AI_API_KEY_HERE") {
+                    throw new Error("Please configure your Claude API key in Settings");
+                }
+
+                const apiUrl = 'https://api.anthropic.com/v1/messages';
+
+                const payload = {
+                    model: "claude-3-5-sonnet-20241022",
+                    max_tokens: 4096,
+                    temperature: 0.1,
+                    system: systemPrompt,
+                    messages: [{
+                        role: "user",
+                        content: [
+                            {
+                                type: "image",
+                                source: {
+                                    type: "base64",
+                                    media_type: "image/png",
+                                    data: base64Image
+                                }
+                            },
+                            {
+                                type: "text",
+                                text: userPrompt
+                            }
+                        ]
+                    }]
+                };
+
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'x-api-key': apiKey,
+                        'anthropic-version': '2023-06-01'
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    throw new Error(`Claude API error (${response.status}): ${errorText}`);
+                }
+
+                const data = await response.json();
+                const text = data.content?.[0]?.text;
+
+                if (!text) {
+                    throw new Error('No response from Claude Vision API');
+                }
+
+                // Extract JSON from potential markdown code blocks
+                const jsonMatch = text.match(/```json\s*([\s\S]*?)\s*```/) || text.match(/{[\s\S]*}/);
+                const jsonText = jsonMatch ? (jsonMatch[1] || jsonMatch[0]) : text;
+
+                try {
+                    return JSON.parse(jsonText);
+                } catch (e) {
+                    throw new Error(`Failed to parse Claude response as JSON: ${e.message}`);
+                }
+            },
+
+            /**
+             * Call GPT-4V API
+             */
+            async callGPT4Vision(base64Image, systemPrompt, userPrompt) {
+                const apiKey = CONFIG.AI_API_KEY;
+                if (!apiKey || apiKey === "PASTE_YOUR_AI_API_KEY_HERE") {
+                    throw new Error("Please configure your OpenAI API key in Settings");
+                }
+
+                const apiUrl = 'https://api.openai.com/v1/chat/completions';
+
+                const payload = {
+                    model: "gpt-4-turbo",
+                    max_tokens: 4096,
+                    temperature: 0.1,
+                    response_format: { type: "json_object" },
+                    messages: [
+                        {
+                            role: "system",
+                            content: systemPrompt
+                        },
+                        {
+                            role: "user",
+                            content: [
+                                {
+                                    type: "text",
+                                    text: userPrompt
+                                },
+                                {
+                                    type: "image_url",
+                                    image_url: {
+                                        url: `data:image/png;base64,${base64Image}`
+                                    }
+                                }
+                            ]
+                        }
+                    ]
+                };
+
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${apiKey}`
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    throw new Error(`OpenAI API error (${response.status}): ${errorText}`);
+                }
+
+                const data = await response.json();
+                const text = data.choices?.[0]?.message?.content;
+
+                if (!text) {
+                    throw new Error('No response from GPT-4V API');
+                }
+
+                try {
+                    return JSON.parse(text);
+                } catch (e) {
+                    throw new Error(`Failed to parse GPT-4V response as JSON: ${e.message}`);
+                }
+            },
+
+            /**
+             * Display table results in modal
+             */
+            displayTableResults(tableData, provider) {
+                const modal = document.getElementById('table-parser-modal');
+                const providerNames = {
+                    gemini: 'Google Gemini Vision',
+                    anthropic: 'Claude 3.5 Sonnet',
+                    openai: 'GPT-4 Turbo Vision'
+                };
+
+                // Update metadata
+                document.getElementById('table-provider-name').textContent = providerNames[provider] || provider;
+                document.getElementById('table-row-count').textContent = tableData.rows?.length || 0;
+                document.getElementById('table-col-count').textContent = tableData.headers?.length || tableData.rows?.[0]?.length || 0;
+
+                // Render table preview
+                const tablePreview = document.getElementById('table-preview');
+                let html = '<thead><tr>';
+
+                // Render headers
+                if (tableData.headers && tableData.headers.length > 0) {
+                    tableData.headers.forEach(header => {
+                        html += `<th style="border: 1px solid #ddd; padding: 8px; background: #f0f0f0; font-weight: 600;">${this.escapeHtml(header)}</th>`;
+                    });
+                } else if (tableData.rows && tableData.rows.length > 0) {
+                    // Use first row as headers if not provided
+                    tableData.rows[0].forEach((cell, i) => {
+                        html += `<th style="border: 1px solid #ddd; padding: 8px; background: #f0f0f0; font-weight: 600;">Column ${i + 1}</th>`;
+                    });
+                }
+
+                html += '</tr></thead><tbody>';
+
+                // Render rows
+                const startRow = (tableData.headers && tableData.headers.length > 0) ? 0 : 1;
+                if (tableData.rows && tableData.rows.length > 0) {
+                    for (let i = startRow; i < tableData.rows.length; i++) {
+                        html += '<tr>';
+                        tableData.rows[i].forEach(cell => {
+                            html += `<td style="border: 1px solid #ddd; padding: 8px;">${this.escapeHtml(String(cell))}</td>`;
+                        });
+                        html += '</tr>';
+                    }
+                }
+
+                html += '</tbody>';
+                tablePreview.innerHTML = html;
+
+                // Update raw JSON
+                document.getElementById('table-json').textContent = JSON.stringify(tableData, null, 2);
+
+                // Show modal
+                modal.classList.add('active');
+            },
+
+            /**
+             * Escape HTML to prevent XSS
+             */
+            escapeHtml(text) {
+                const div = document.createElement('div');
+                div.textContent = text;
+                return div.innerHTML;
             }
         };
 
@@ -5074,7 +5513,123 @@ Continue with import?`;
             SettingsManager.updateStatusIndicators();
             StatusManager.show('All settings cleared', 'info');
         };
-        
+
+        // ============================================================================
+        // TABLE PARSER MODAL FUNCTIONS
+        // ============================================================================
+
+        /**
+         * Close table parser modal
+         */
+        window.closeTableParser = function() {
+            const modal = document.getElementById('table-parser-modal');
+            modal.classList.remove('active');
+        };
+
+        /**
+         * Toggle raw JSON visibility
+         */
+        window.toggleRawJSON = function() {
+            const checkbox = document.getElementById('show-raw-json');
+            const container = document.getElementById('table-json-container');
+            container.style.display = checkbox.checked ? 'block' : 'none';
+        };
+
+        /**
+         * Export table as JSON file
+         */
+        window.exportTableAsJSON = function() {
+            if (!TableParserManager.currentTableData) {
+                StatusManager.show('No table data to export', 'warning');
+                return;
+            }
+
+            const data = TableParserManager.currentTableData.data;
+            const jsonStr = JSON.stringify(data, null, 2);
+            const blob = new Blob([jsonStr], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+
+            const filename = `table_p${TableParserManager.currentTableData.page}_${Date.now()}.json`;
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            a.click();
+            URL.revokeObjectURL(url);
+
+            StatusManager.show(`✓ Table exported: ${filename}`, 'success');
+        };
+
+        /**
+         * Export table as CSV file
+         */
+        window.exportTableAsCSV = function() {
+            if (!TableParserManager.currentTableData) {
+                StatusManager.show('No table data to export', 'warning');
+                return;
+            }
+
+            const data = TableParserManager.currentTableData.data;
+            let csv = '';
+
+            // Add headers
+            if (data.headers && data.headers.length > 0) {
+                csv += data.headers.map(h => `"${String(h).replace(/"/g, '""')}"`).join(',') + '\n';
+            }
+
+            // Add rows
+            if (data.rows && data.rows.length > 0) {
+                data.rows.forEach(row => {
+                    csv += row.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(',') + '\n';
+                });
+            }
+
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = URL.createObjectURL(blob);
+
+            const filename = `table_p${TableParserManager.currentTableData.page}_${Date.now()}.csv`;
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            a.click();
+            URL.revokeObjectURL(url);
+
+            StatusManager.show(`✓ Table exported: ${filename}`, 'success');
+        };
+
+        /**
+         * Copy table to clipboard
+         */
+        window.copyTableToClipboard = function() {
+            if (!TableParserManager.currentTableData) {
+                StatusManager.show('No table data to copy', 'warning');
+                return;
+            }
+
+            const data = TableParserManager.currentTableData.data;
+            let text = '';
+
+            // Add headers
+            if (data.headers && data.headers.length > 0) {
+                text += data.headers.join('\t') + '\n';
+            }
+
+            // Add rows
+            if (data.rows && data.rows.length > 0) {
+                data.rows.forEach(row => {
+                    text += row.join('\t') + '\n';
+                });
+            }
+
+            navigator.clipboard.writeText(text)
+                .then(() => {
+                    StatusManager.show('✓ Table copied to clipboard (tab-separated)', 'success');
+                })
+                .catch(err => {
+                    console.error('Clipboard copy failed:', err);
+                    StatusManager.show('❌ Failed to copy to clipboard', 'error');
+                });
+        };
+
         // Load settings on startup
         SettingsManager.loadSettings();
         SettingsManager.updateStatusIndicators();
