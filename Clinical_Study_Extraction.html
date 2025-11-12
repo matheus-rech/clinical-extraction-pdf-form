@@ -1508,21 +1508,52 @@
             <!-- Session Management -->
             <div class="settings-group">
                 <h3>💾 Session Management <span id="session-status" class="key-status missing">No Session</span></h3>
-                <p class="help-text">Your work is automatically saved as you type. Sessions persist across browser refreshes.</p>
+                <p class="help-text">Your work is automatically saved to browser storage. Export sessions to files for backup, sharing, or working across devices.</p>
 
+                <!-- Auto-Save Status -->
                 <div id="session-info" style="margin-top: 10px; padding: 10px; background: #f5f5f5; border-radius: 4px; font-size: 12px;">
                     <p style="margin: 0;">
-                        <strong>Last saved:</strong> <span id="session-timestamp">Never</span>
+                        <strong>Auto-save:</strong> <span id="session-timestamp">Never</span>
                     </p>
                     <p style="margin: 5px 0 0 0;">
                         <strong>Current step:</strong> <span id="session-step">N/A</span>
                     </p>
                 </div>
 
-                <button onclick="clearSessionData()" style="margin-top: 10px; padding: 8px 15px; background: var(--error-red); color: white; border: none; border-radius: 4px; cursor: pointer; width: 100%;">
-                    🗑️ Clear Session Data
+                <!-- Export Session to File -->
+                <div style="margin-top: 15px; padding: 10px; background: #e8f5e9; border-radius: 4px; border-left: 4px solid #4caf50;">
+                    <p style="margin: 0 0 8px 0; font-weight: 600; font-size: 13px;">📥 Export Session to File</p>
+                    <p class="help-text" style="margin: 0 0 10px 0;">Save complete progress to a JSON file. Share with colleagues or use as backup.</p>
+
+                    <label style="display: block; font-size: 12px; margin-bottom: 5px;">
+                        <input type="checkbox" id="include-pdf-export" style="width: auto; margin-right: 5px;">
+                        Include PDF file (~1.33x larger)
+                    </label>
+                    <p class="help-text" style="margin: 0 0 10px 0;">
+                        <span id="export-size-estimate">Estimated size: Calculating...</span>
+                    </p>
+
+                    <button onclick="exportSessionToFile()" style="padding: 8px 15px; background: #4caf50; color: white; border: none; border-radius: 4px; cursor: pointer; width: 100%; font-weight: 600;">
+                        📥 Download Session File
+                    </button>
+                </div>
+
+                <!-- Import Session from File -->
+                <div style="margin-top: 15px; padding: 10px; background: #e3f2fd; border-radius: 4px; border-left: 4px solid #2196f3;">
+                    <p style="margin: 0 0 8px 0; font-weight: 600; font-size: 13px;">📤 Import Session from File</p>
+                    <p class="help-text" style="margin: 0 0 10px 0;">Restore a previously saved session from a JSON file.</p>
+
+                    <input type="file" id="session-import-file" accept=".json" style="display: none;" onchange="handleSessionImport(event)">
+                    <button onclick="document.getElementById('session-import-file').click()" style="padding: 8px 15px; background: #2196f3; color: white; border: none; border-radius: 4px; cursor: pointer; width: 100%; font-weight: 600;">
+                        📤 Upload Session File
+                    </button>
+                </div>
+
+                <!-- Clear Browser Storage -->
+                <button onclick="clearSessionData()" style="margin-top: 15px; padding: 8px 15px; background: var(--error-red); color: white; border: none; border-radius: 4px; cursor: pointer; width: 100%;">
+                    🗑️ Clear Browser Storage
                 </button>
-                <p class="help-text" style="margin-top: 5px;">This will clear your saved form data and progress. API keys and extraction history are not affected.</p>
+                <p class="help-text" style="margin-top: 5px;">This clears auto-saved data in browser storage only. Exported files are not affected.</p>
             </div>
 
             <div class="settings-actions">
@@ -4487,6 +4518,288 @@
                 window.addEventListener('beforeunload', () => this.saveSession());
 
                 console.log('Auto-save initialized');
+            },
+
+            /**
+             * Export complete session to downloadable JSON file
+             * @param {Object} options - Export options { includePDF: boolean, includeImages: boolean }
+             */
+            exportToFile: async function(options = {}) {
+                try {
+                    const state = AppStateManager.getState();
+                    const extractions = ExtractionTracker.getExtractions();
+
+                    // Build complete session data
+                    const sessionExport = {
+                        version: "2.0",
+                        exportType: "complete_session",
+                        exportedAt: new Date().toISOString(),
+                        documentName: state.documentName || "untitled",
+                        sessionData: {
+                            formData: this.collectFormData(),
+                            appState: {
+                                currentStep: state.currentStep,
+                                currentPage: state.currentPage,
+                                scale: state.scale,
+                                documentName: state.documentName
+                            },
+                            extractions: extractions,
+                            pdfMetadata: {
+                                name: state.documentName,
+                                pages: state.totalPages,
+                                currentPage: state.currentPage,
+                                scale: state.scale
+                            }
+                        },
+                        pdfIncluded: false
+                    };
+
+                    // Optionally include PDF blob
+                    if (options.includePDF && state.pdfBlob) {
+                        StatusManager.show('⏳ Converting PDF to Base64... This may take a moment.', 'info', 10000);
+                        const base64 = await this.blobToBase64(state.pdfBlob);
+                        sessionExport.pdfData = {
+                            base64: base64,
+                            size: state.pdfBlob.size,
+                            type: state.pdfBlob.type
+                        };
+                        sessionExport.pdfIncluded = true;
+                    }
+
+                    // Generate filename
+                    const docName = (state.documentName || 'session').replace(/[^a-z0-9]/gi, '-').toLowerCase();
+                    const timestamp = new Date().toISOString().slice(0, 10);
+                    const filename = `session_${docName}_${timestamp}.json`;
+
+                    // Download file
+                    const jsonStr = JSON.stringify(sessionExport, null, 2);
+                    const blob = new Blob([jsonStr], { type: 'application/json' });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = filename;
+                    a.click();
+                    URL.revokeObjectURL(url);
+
+                    // Show success
+                    const sizeKB = Math.round(blob.size / 1024);
+                    StatusManager.show(`✓ Session exported: ${filename} (${sizeKB} KB)`, 'success', 5000);
+                    console.log('Session exported:', filename, sizeKB + ' KB');
+
+                } catch (error) {
+                    console.error('Failed to export session:', error);
+                    StatusManager.show('❌ Failed to export session: ' + error.message, 'error', 5000);
+                }
+            },
+
+            /**
+             * Import session from uploaded JSON file
+             * @param {File} file - The uploaded JSON file
+             */
+            importFromFile: async function(file) {
+                try {
+                    // Read file
+                    const text = await file.text();
+                    const sessionData = JSON.parse(text);
+
+                    // Validate session data
+                    if (!this.validateSessionFile(sessionData)) {
+                        throw new Error('Invalid session file format');
+                    }
+
+                    // Show import preview
+                    const shouldImport = await this.showImportPreview(sessionData);
+                    if (!shouldImport) {
+                        StatusManager.show('Import cancelled', 'info');
+                        return;
+                    }
+
+                    // Clear current session
+                    StatusManager.show('⏳ Restoring session...', 'info', 3000);
+
+                    // Restore form data
+                    if (sessionData.sessionData.formData) {
+                        Object.keys(sessionData.sessionData.formData).forEach(key => {
+                            const field = document.getElementById(key) || document.querySelector(`[name="${key}"]`);
+                            if (field) {
+                                if (field.type === 'checkbox') {
+                                    field.checked = sessionData.sessionData.formData[key];
+                                } else if (field.type === 'radio') {
+                                    if (field.value === sessionData.sessionData.formData[key]) {
+                                        field.checked = true;
+                                    }
+                                } else {
+                                    field.value = sessionData.sessionData.formData[key];
+                                }
+                            }
+                        });
+                    }
+
+                    // Restore extractions
+                    if (sessionData.sessionData.extractions) {
+                        // Clear current extractions
+                        ExtractionTracker.extractions = sessionData.sessionData.extractions;
+                        ExtractionTracker.save();
+                        ExtractionTracker.render();
+                    }
+
+                    // Restore app state
+                    if (sessionData.sessionData.appState) {
+                        const appState = sessionData.sessionData.appState;
+                        if (appState.currentStep !== undefined) {
+                            AppStateManager.setState({ currentStep: appState.currentStep });
+                            if (FormManager && FormManager.showStep) {
+                                FormManager.showStep(appState.currentStep);
+                            }
+                        }
+                        if (appState.documentName) {
+                            AppStateManager.setState({ documentName: appState.documentName });
+                        }
+                    }
+
+                    // Restore PDF if included
+                    if (sessionData.pdfIncluded && sessionData.pdfData) {
+                        StatusManager.show('⏳ Restoring PDF...', 'info', 3000);
+                        const pdfBlob = await this.base64ToBlob(sessionData.pdfData.base64, sessionData.pdfData.type);
+                        await this.loadPDFFromBlob(pdfBlob, sessionData.documentName);
+                    } else if (sessionData.sessionData.pdfMetadata) {
+                        // PDF not included - inform user
+                        StatusManager.show(`⚠️ Please re-upload PDF: ${sessionData.sessionData.pdfMetadata.name}`, 'warning', 8000);
+                    }
+
+                    // Save to localStorage
+                    this.saveSession();
+
+                    // Show success
+                    StatusManager.show(`✓ Session restored: ${sessionData.documentName}`, 'success', 5000);
+                    console.log('Session imported:', sessionData.documentName);
+
+                } catch (error) {
+                    console.error('Failed to import session:', error);
+                    StatusManager.show('❌ Failed to import session: ' + error.message, 'error', 5000);
+                }
+            },
+
+            /**
+             * Validate session file structure
+             */
+            validateSessionFile: function(data) {
+                if (!data || typeof data !== 'object') return false;
+                if (!data.version || !data.sessionData) return false;
+                if (!data.sessionData.formData || !data.sessionData.appState) return false;
+                return true;
+            },
+
+            /**
+             * Show import preview modal
+             */
+            showImportPreview: function(sessionData) {
+                return new Promise((resolve) => {
+                    const formFieldCount = Object.keys(sessionData.sessionData.formData || {}).length;
+                    const extractionCount = (sessionData.sessionData.extractions || []).length;
+                    const step = (sessionData.sessionData.appState?.currentStep || 0) + 1;
+                    const pdfIncluded = sessionData.pdfIncluded ? 'YES - Included' : 'NO - You must re-upload';
+
+                    const message = `
+Restore Session: "${sessionData.documentName}"
+
+✓ Form data: ${formFieldCount} fields filled
+✓ Extractions: ${extractionCount} items
+✓ Current step: Step ${step} of 8
+✓ PDF: ${sessionData.sessionData.pdfMetadata?.name || 'Unknown'} (${pdfIncluded})
+
+⚠️ This will replace your current session.
+
+Continue with import?`;
+
+                    if (confirm(message)) {
+                        resolve(true);
+                    } else {
+                        resolve(false);
+                    }
+                });
+            },
+
+            /**
+             * Calculate session export size
+             */
+            getExportSize: function(includePDF = false) {
+                const session = {
+                    formData: this.collectFormData(),
+                    extractions: ExtractionTracker.getExtractions(),
+                    appState: AppStateManager.getState()
+                };
+
+                let sizeBytes = JSON.stringify(session).length;
+
+                if (includePDF) {
+                    const state = AppStateManager.getState();
+                    if (state.pdfBlob) {
+                        // Base64 encoding increases size by ~33%
+                        sizeBytes += state.pdfBlob.size * 1.33;
+                    }
+                }
+
+                // Convert to human-readable
+                if (sizeBytes < 1024) return sizeBytes + ' B';
+                if (sizeBytes < 1024 * 1024) return Math.round(sizeBytes / 1024) + ' KB';
+                return (sizeBytes / (1024 * 1024)).toFixed(1) + ' MB';
+            },
+
+            /**
+             * Helper: Convert Blob to Base64
+             */
+            blobToBase64: function(blob) {
+                return new Promise((resolve, reject) => {
+                    const reader = new FileReader();
+                    reader.onloadend = () => resolve(reader.result.split(',')[1]); // Remove data:..., prefix
+                    reader.onerror = reject;
+                    reader.readAsDataURL(blob);
+                });
+            },
+
+            /**
+             * Helper: Convert Base64 to Blob
+             */
+            base64ToBlob: function(base64, mimeType) {
+                const byteCharacters = atob(base64);
+                const byteNumbers = new Array(byteCharacters.length);
+                for (let i = 0; i < byteCharacters.length; i++) {
+                    byteNumbers[i] = byteCharacters.charCodeAt(i);
+                }
+                const byteArray = new Uint8Array(byteNumbers);
+                return new Blob([byteArray], { type: mimeType });
+            },
+
+            /**
+             * Helper: Load PDF from Blob
+             */
+            loadPDFFromBlob: async function(blob, filename) {
+                try {
+                    const arrayBuffer = await blob.arrayBuffer();
+                    const loadingTask = window.pdfjsLib.getDocument({ data: arrayBuffer });
+                    const pdfDoc = await loadingTask.promise;
+
+                    // Update app state
+                    AppStateManager.setState({
+                        pdfDoc: pdfDoc,
+                        pdfBlob: blob,
+                        documentName: filename,
+                        totalPages: pdfDoc.numPages,
+                        currentPage: 1
+                    });
+
+                    // Render first page
+                    if (window.PDFRenderer && window.PDFRenderer.renderPage) {
+                        await window.PDFRenderer.renderPage(1);
+                    }
+
+                    document.getElementById('total-pages').textContent = pdfDoc.numPages.toString();
+
+                } catch (error) {
+                    console.error('Failed to load PDF from blob:', error);
+                    throw error;
+                }
             }
         };
 
@@ -4576,6 +4889,14 @@
             
             updateProviderFields();
             updateSessionInfo(); // Update session info display
+
+            // Hook up export size estimate updates
+            const includePdfCheckbox = document.getElementById('include-pdf-export');
+            if (includePdfCheckbox) {
+                includePdfCheckbox.onchange = updateExportSizeEstimate;
+                updateExportSizeEstimate(); // Calculate initial size
+            }
+
             modal.classList.add('active');
         };
 
@@ -4614,6 +4935,42 @@
                     location.reload();
                 }
             }
+        };
+
+        /**
+         * Export session to downloadable file
+         */
+        window.exportSessionToFile = async function() {
+            const includePDF = document.getElementById('include-pdf-export').checked;
+            await SessionManager.exportToFile({ includePDF: includePDF });
+        };
+
+        /**
+         * Handle session import from file
+         */
+        window.handleSessionImport = async function(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            await SessionManager.importFromFile(file);
+
+            // Reset file input
+            event.target.value = '';
+
+            // Update UI
+            updateSessionInfo();
+
+            // Close settings modal
+            closeSettings();
+        };
+
+        /**
+         * Update export size estimate when checkbox changes
+         */
+        window.updateExportSizeEstimate = function() {
+            const includePDF = document.getElementById('include-pdf-export').checked;
+            const sizeEstimate = SessionManager.getExportSize(includePDF);
+            document.getElementById('export-size-estimate').textContent = `Estimated size: ${sizeEstimate}`;
         };
 
         /**
