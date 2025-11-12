@@ -998,6 +998,41 @@
             background: var(--error-red);
             color: white;
         }
+
+        .security-warning {
+            background: #fff3cd;
+            border: 1px solid #ffc107;
+            border-left: 4px solid #ff9800;
+            padding: var(--spacing-md);
+            border-radius: var(--border-radius-md);
+            margin: var(--spacing-lg) 0;
+            font-size: 12px;
+            line-height: 1.6;
+        }
+
+        .security-warning h4 {
+            margin: 0 0 var(--spacing-xs) 0;
+            color: #856404;
+            font-size: 13px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .security-warning p {
+            margin: var(--spacing-xs) 0;
+            color: #856404;
+        }
+
+        .security-warning ul {
+            margin: var(--spacing-xs) 0;
+            padding-left: 20px;
+            color: #856404;
+        }
+
+        .security-warning li {
+            margin: 3px 0;
+        }
     </style>
 </head>
 <body>
@@ -1448,6 +1483,26 @@
                 <label for="google-sheet-id" style="margin-top: 15px;">Google Sheet ID</label>
                 <input type="text" id="google-sheet-id" placeholder="1BxiMVs0XRA5nFMdKv...">
                 <p class="help-text">From your sheet URL: docs.google.com/spreadsheets/d/<strong>[SHEET_ID]</strong>/edit</p>
+            </div>
+
+            <!-- Security Notice -->
+            <div class="security-warning">
+                <h4>🔐 Security & Privacy Notice</h4>
+                <p><strong>API Key Storage:</strong> Your API keys are stored in browser localStorage using Base64 encoding. This is <strong>NOT encryption</strong> - it only obfuscates the data.</p>
+                <p><strong>What this means:</strong></p>
+                <ul>
+                    <li>Keys can be accessed via browser DevTools (F12 → Application → localStorage)</li>
+                    <li>Browser extensions may be able to read localStorage</li>
+                    <li>Keys persist until you clear browser data or click "Clear All"</li>
+                </ul>
+                <p><strong>Best Practices:</strong></p>
+                <ul>
+                    <li>Don't use this on shared or public computers</li>
+                    <li>Use API keys with usage limits and monitoring</li>
+                    <li>Clear settings when done: Click "Clear All" button</li>
+                    <li>For better security, clear browser data after each session</li>
+                </ul>
+                <p><strong>Data Privacy:</strong> All PDF processing happens locally in your browser. No data is sent to external servers except when using AI features (PDF text sent to selected AI provider) or Google Sheets export.</p>
             </div>
 
             <div class="settings-actions">
