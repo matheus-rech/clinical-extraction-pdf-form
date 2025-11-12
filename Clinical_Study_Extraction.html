@@ -1505,6 +1505,26 @@
                 <p><strong>Data Privacy:</strong> All PDF processing happens locally in your browser. No data is sent to external servers except when using AI features (PDF text sent to selected AI provider) or Google Sheets export.</p>
             </div>
 
+            <!-- Session Management -->
+            <div class="settings-group">
+                <h3>💾 Session Management <span id="session-status" class="key-status missing">No Session</span></h3>
+                <p class="help-text">Your work is automatically saved as you type. Sessions persist across browser refreshes.</p>
+
+                <div id="session-info" style="margin-top: 10px; padding: 10px; background: #f5f5f5; border-radius: 4px; font-size: 12px;">
+                    <p style="margin: 0;">
+                        <strong>Last saved:</strong> <span id="session-timestamp">Never</span>
+                    </p>
+                    <p style="margin: 5px 0 0 0;">
+                        <strong>Current step:</strong> <span id="session-step">N/A</span>
+                    </p>
+                </div>
+
+                <button onclick="clearSessionData()" style="margin-top: 10px; padding: 8px 15px; background: var(--error-red); color: white; border: none; border-radius: 4px; cursor: pointer; width: 100%;">
+                    🗑️ Clear Session Data
+                </button>
+                <p class="help-text" style="margin-top: 5px;">This will clear your saved form data and progress. API keys and extraction history are not affected.</p>
+            </div>
+
             <div class="settings-actions">
                 <button onclick="closeSettings()" style="background: var(--gray-500);">Cancel</button>
                 <button onclick="clearSettings()" style="background: var(--error-red);">Clear All</button>
@@ -4257,11 +4277,223 @@
                 throw new Error(`${providerConfig.name} failed after ${maxAttempts} attempts.`);
             }
         };
-        
+
+        // ============================================================================
+        // SESSION MANAGER - Auto-save and restore user progress
+        // ============================================================================
+
+        const SessionManager = {
+            STORAGE_KEY: 'clinical_extraction_session',
+            saveTimeout: null,
+
+            /**
+             * Collect all form data from all 8 steps
+             */
+            collectFormData: function() {
+                const formData = {};
+                const form = document.getElementById('extraction-form');
+                if (!form) return formData;
+
+                // Get all inputs, textareas, and selects
+                const fields = form.querySelectorAll('input, textarea, select');
+                fields.forEach(field => {
+                    if (field.id || field.name) {
+                        const key = field.id || field.name;
+                        if (field.type === 'checkbox') {
+                            formData[key] = field.checked;
+                        } else if (field.type === 'radio') {
+                            if (field.checked) formData[key] = field.value;
+                        } else {
+                            formData[key] = field.value;
+                        }
+                    }
+                });
+
+                return formData;
+            },
+
+            /**
+             * Save current session to localStorage
+             */
+            saveSession: function() {
+                try {
+                    const state = AppStateManager.getState();
+
+                    const session = {
+                        version: "1.0",
+                        savedAt: new Date().toISOString(),
+                        formData: this.collectFormData(),
+                        appState: {
+                            currentStep: state.currentStep,
+                            currentPage: state.currentPage,
+                            scale: state.scale,
+                            documentName: state.documentName,
+                            activeField: state.activeField
+                        }
+                    };
+
+                    // Store in localStorage
+                    localStorage.setItem(this.STORAGE_KEY, JSON.stringify(session));
+
+                    // Optional: Show subtle indicator
+                    console.log('Session saved:', new Date().toISOString());
+
+                } catch (error) {
+                    console.error('Failed to save session:', error);
+                    // Handle quota exceeded error
+                    if (error.name === 'QuotaExceededError') {
+                        StatusManager.show('⚠️ Storage full. Export data and clear old sessions.', 'warning', 5000);
+                    }
+                }
+            },
+
+            /**
+             * Save session with debouncing to avoid excessive writes
+             */
+            debouncedSave: function() {
+                clearTimeout(this.saveTimeout);
+                this.saveTimeout = setTimeout(() => {
+                    this.saveSession();
+                }, 500); // Wait 500ms after last change
+            },
+
+            /**
+             * Load and restore session from localStorage
+             */
+            loadSession: function() {
+                try {
+                    const saved = localStorage.getItem(this.STORAGE_KEY);
+                    if (!saved) return null;
+
+                    const session = JSON.parse(saved);
+
+                    // Restore form data
+                    if (session.formData) {
+                        Object.keys(session.formData).forEach(key => {
+                            const field = document.getElementById(key) || document.querySelector(`[name="${key}"]`);
+                            if (field) {
+                                if (field.type === 'checkbox') {
+                                    field.checked = session.formData[key];
+                                } else if (field.type === 'radio') {
+                                    if (field.value === session.formData[key]) {
+                                        field.checked = true;
+                                    }
+                                } else {
+                                    field.value = session.formData[key];
+                                }
+                            }
+                        });
+                    }
+
+                    // Restore app state
+                    if (session.appState) {
+                        if (session.appState.currentStep !== undefined) {
+                            AppStateManager.setState({ currentStep: session.appState.currentStep });
+                            if (FormManager && FormManager.showStep) {
+                                FormManager.showStep(session.appState.currentStep);
+                            }
+                        }
+                        if (session.appState.currentPage) {
+                            AppStateManager.setState({ currentPage: session.appState.currentPage });
+                        }
+                        if (session.appState.scale) {
+                            AppStateManager.setState({ scale: session.appState.scale });
+                        }
+                        if (session.appState.documentName) {
+                            AppStateManager.setState({ documentName: session.appState.documentName });
+                        }
+                    }
+
+                    // Show notification
+                    const savedDate = new Date(session.savedAt);
+                    const timeAgo = this.getTimeAgo(savedDate);
+                    StatusManager.show(`✓ Session restored (saved ${timeAgo})`, 'success', 4000);
+
+                    console.log('Session restored from:', session.savedAt);
+                    return session;
+
+                } catch (error) {
+                    console.error('Failed to load session:', error);
+                    return null;
+                }
+            },
+
+            /**
+             * Clear session from localStorage
+             */
+            clearSession: function() {
+                try {
+                    localStorage.removeItem(this.STORAGE_KEY);
+                    StatusManager.show('✓ Session cleared', 'success');
+                    console.log('Session cleared');
+                } catch (error) {
+                    console.error('Failed to clear session:', error);
+                }
+            },
+
+            /**
+             * Get session info for display
+             */
+            getSessionInfo: function() {
+                try {
+                    const saved = localStorage.getItem(this.STORAGE_KEY);
+                    if (!saved) return null;
+
+                    const session = JSON.parse(saved);
+                    return {
+                        savedAt: session.savedAt,
+                        timeAgo: this.getTimeAgo(new Date(session.savedAt)),
+                        hasData: Object.keys(session.formData || {}).length > 0,
+                        currentStep: session.appState?.currentStep
+                    };
+                } catch (error) {
+                    return null;
+                }
+            },
+
+            /**
+             * Helper to get human-readable time ago
+             */
+            getTimeAgo: function(date) {
+                const seconds = Math.floor((new Date() - date) / 1000);
+
+                if (seconds < 60) return 'just now';
+                const minutes = Math.floor(seconds / 60);
+                if (minutes < 60) return `${minutes} minute${minutes > 1 ? 's' : ''} ago`;
+                const hours = Math.floor(minutes / 60);
+                if (hours < 24) return `${hours} hour${hours > 1 ? 's' : ''} ago`;
+                const days = Math.floor(hours / 24);
+                return `${days} day${days > 1 ? 's' : ''} ago`;
+            },
+
+            /**
+             * Setup auto-save listeners
+             */
+            initializeAutoSave: function() {
+                const form = document.getElementById('extraction-form');
+                if (!form) return;
+
+                // Save on input/change events (debounced)
+                form.addEventListener('input', () => this.debouncedSave());
+                form.addEventListener('change', () => this.debouncedSave());
+
+                // Save on step navigation
+                const nextBtn = document.getElementById('next-btn');
+                const prevBtn = document.getElementById('prev-btn');
+                if (nextBtn) nextBtn.addEventListener('click', () => this.saveSession());
+                if (prevBtn) prevBtn.addEventListener('click', () => this.saveSession());
+
+                // Save before page unload
+                window.addEventListener('beforeunload', () => this.saveSession());
+
+                console.log('Auto-save initialized');
+            }
+        };
+
         // ============================================================================
         // SETTINGS MANAGER - Frontend configuration without code editing
         // ============================================================================
-        
+
         const SettingsManager = {
             STORAGE_KEY: 'clinical_extraction_settings',
             
@@ -4343,9 +4575,47 @@
             }
             
             updateProviderFields();
+            updateSessionInfo(); // Update session info display
             modal.classList.add('active');
         };
-        
+
+        /**
+         * Update session info in settings modal
+         */
+        window.updateSessionInfo = function() {
+            const sessionInfo = SessionManager.getSessionInfo();
+            const statusBadge = document.getElementById('session-status');
+            const timestampSpan = document.getElementById('session-timestamp');
+            const stepSpan = document.getElementById('session-step');
+
+            if (sessionInfo && sessionInfo.hasData) {
+                statusBadge.textContent = 'Active';
+                statusBadge.className = 'key-status configured';
+                timestampSpan.textContent = sessionInfo.timeAgo;
+                stepSpan.textContent = `Step ${(sessionInfo.currentStep || 0) + 1} of 8`;
+            } else {
+                statusBadge.textContent = 'No Session';
+                statusBadge.className = 'key-status missing';
+                timestampSpan.textContent = 'Never';
+                stepSpan.textContent = 'N/A';
+            }
+        };
+
+        /**
+         * Clear session data
+         */
+        window.clearSessionData = function() {
+            if (confirm('Are you sure you want to clear your saved session? This will erase all form data and progress.')) {
+                SessionManager.clearSession();
+                updateSessionInfo();
+
+                // Optionally reload page to show cleared state
+                if (confirm('Session cleared. Reload page to see changes?')) {
+                    location.reload();
+                }
+            }
+        };
+
         /**
          * Close settings modal without saving
          */
@@ -4450,6 +4720,12 @@
         // Load settings on startup
         SettingsManager.loadSettings();
         SettingsManager.updateStatusIndicators();
+
+        // Load session and initialize auto-save
+        setTimeout(() => {
+            SessionManager.loadSession(); // Restore previous session if exists
+            SessionManager.initializeAutoSave(); // Setup auto-save listeners
+        }, 500); // Delay to ensure FormManager is initialized
 
         // ============================================================================
         // PDF ANNOTATIONS IMPORTER - Feature 2: Import PDF Annotations
